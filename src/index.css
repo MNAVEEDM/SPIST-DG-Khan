@@ -1,0 +1,319 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   SPIST Design System
+   Palette extracted from the official SPIST logo.
+   ============================================================ */
+@theme {
+  --color-spist-green: #186f42;
+  --color-spist-green-dark: #0f4f2e;
+  --color-spist-green-deep: #0b3a22;
+  --color-spist-accent: #56a975;
+  --color-spist-accent-soft: #e8f3ec;
+  --color-spist-maroon: #9d120f;
+  --color-spist-maroon-dark: #7a0d0b;
+  --color-spist-charcoal: #282823;
+  --color-spist-muted: #5c5c55;
+  --color-spist-line: #e4e6e2;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* ---- Elevation scale (0 → 4) ---------------------------------------- */
+  --shadow-e1: 0 1px 2px rgb(40 40 35 / 0.06), 0 2px 8px -2px rgb(40 40 35 / 0.08);
+  --shadow-card: 0 2px 4px -1px rgb(40 40 35 / 0.06), 0 8px 24px -10px rgb(40 40 35 / 0.16);
+  --shadow-e3: 0 4px 8px -2px rgb(40 40 35 / 0.08), 0 14px 34px -12px rgb(40 40 35 / 0.22);
+  --shadow-panel: 0 6px 12px -4px rgb(40 40 35 / 0.10), 0 18px 45px -12px rgb(40 40 35 / 0.28);
+  --shadow-glass: 0 4px 24px rgb(0 0 0 / 0.15);
+
+  /* ---- Radius convention (uses stock Tailwind scale) --------------------
+     rounded-md   buttons, inputs, small chips
+     rounded-lg   icon plates, logo chip, inline link rows
+     rounded-xl   cards, panels, tables, menu surfaces
+     rounded-full pills, filter chips, avatars, slider dots
+     --------------------------------------------------------------------- */
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+
+  /* ---- Glass (navbar + menu surfaces) ----------------------------------
+     Tinted with spist-green-dark rather than the lighter primary green.
+     At the specified 0.75 translucency the primary green composites to
+     only 3.64:1 against white text once white page content scrolls behind
+     it — below AA. The darker tint holds 4.87:1 in that same worst case
+     while keeping the full 25% see-through, which reads glassier than
+     dimming the effect by pushing the primary green to 0.86 would.
+     --------------------------------------------------------------------- */
+  --glass-nav: rgb(15 79 46 / 0.75);
+  --glass-nav-scrolled: rgb(15 79 46 / 0.9);
+  --glass-nav-deep: rgb(11 58 34 / 0.72);
+  --glass-hairline: rgb(255 255 255 / 0.12);
+  --glass-blur: blur(12px) saturate(160%);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* keeps anchor targets clear of the sticky header */
+    scroll-padding-top: 7rem;
+  }
+
+  body {
+    @apply bg-white font-sans text-spist-charcoal antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-spist-charcoal;
+    text-wrap: balance;
+  }
+
+  /* Visible focus ring for keyboard users across the whole site */
+  :focus-visible {
+    outline: 2px solid var(--color-spist-maroon);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* On the dark green bar a maroon ring is unreadable — use white */
+  .on-dark :focus-visible {
+    outline-color: #ffffff;
+  }
+}
+
+@layer components {
+  .container-spist {
+    @apply mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold
+           transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-spist-green px-6 py-3
+           text-sm font-semibold text-white transition-all duration-200
+           hover:bg-spist-green-dark hover:shadow-lg;
+  }
+
+  .btn-maroon {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-spist-maroon px-6 py-3
+           text-sm font-semibold text-white transition-all duration-200
+           hover:bg-spist-maroon-dark hover:shadow-lg;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border-2 border-white/80 px-6 py-3
+           text-sm font-semibold text-white transition-all duration-200
+           hover:border-white hover:bg-white/15;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border-2 border-spist-green px-6 py-3
+           text-sm font-semibold text-spist-green transition-all duration-200
+           hover:bg-spist-green hover:text-white;
+  }
+
+  /* Section eyebrow + heading pairing used across the homepage */
+  .eyebrow {
+    @apply mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-spist-maroon;
+  }
+
+  .section-title {
+    @apply font-display text-3xl font-bold leading-tight sm:text-4xl;
+  }
+
+  .section-sub {
+    @apply mt-4 max-w-2xl text-base leading-relaxed text-spist-muted;
+  }
+
+  /* =====================================================================
+     GLASSMORPHISM — navigation layer
+     The header is fixed and sits directly on top of the hero / page
+     banner, so these surfaces must stay legible over both artwork and
+     white page content. Opacity steps up on scroll for that reason.
+     ===================================================================== */
+
+  /* Main navigation bar */
+  .glass-nav {
+    background-color: var(--glass-nav);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-hairline);
+    transition:
+      background-color var(--dur-slow) var(--ease-standard),
+      box-shadow var(--dur-slow) var(--ease-standard);
+  }
+
+  /* Past ~40px: denser + lifted. White text measures 6.3:1 here and never
+     drops below 4.87:1 at any scroll position or background. */
+  .glass-nav-scrolled {
+    background-color: var(--glass-nav-scrolled);
+    box-shadow: var(--shadow-glass);
+  }
+
+  /* Thin utility strip above the main bar */
+  .glass-utility {
+    background-color: var(--glass-nav-deep);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-hairline);
+  }
+
+  /* Dropdown / mega-menu panels — kept near-opaque so charcoal menu text
+     never has to compete with whatever scrolls underneath. */
+  .glass-panel {
+    background-color: rgb(255 255 255 / 0.92);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgb(255 255 255 / 0.6);
+  }
+
+  /* Mobile drawer */
+  .glass-drawer {
+    background-color: rgb(255 255 255 / 0.96);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    backdrop-filter: blur(16px) saturate(180%);
+  }
+
+  /* Fallback: if the browser can't blur, go opaque rather than washed out */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-nav,
+    .glass-nav-scrolled {
+      background-color: #0f4f2e;
+    }
+    .glass-utility {
+      background-color: #0b3a22;
+    }
+    .glass-panel,
+    .glass-drawer {
+      background-color: #ffffff;
+    }
+  }
+
+  /* =====================================================================
+     Clears the fixed header. Applied to the first section of every page.
+     ===================================================================== */
+  .header-offset {
+    padding-top: 92px;
+  }
+
+  @media (min-width: 640px) {
+    .header-offset {
+      padding-top: 96px;
+    }
+  }
+
+  /* =====================================================================
+     Expands a small control's hit area to the 44x44px minimum without
+     changing its visual size or the layout around it.
+     ===================================================================== */
+  .tap-target {
+    position: relative;
+  }
+
+  .tap-target::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 600ms var(--ease-out-soft),
+    transform 600ms var(--ease-out-soft);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============================================================
+   Hero / banner artwork
+   The gradient is listed first so it composites ON TOP of the
+   illustration, holding white text above 4.5:1 across the whole
+   left two-thirds where the headline and CTAs sit.
+   ============================================================ */
+.hero-bg {
+  background-color: #07281a; /* paints before the SVG decodes — no flash */
+  background-image:
+    linear-gradient(
+      120deg,
+      rgba(11, 46, 29, 0.92) 0%,
+      rgba(24, 111, 66, 0.75) 55%,
+      rgba(24, 111, 66, 0.4) 100%
+    ),
+    url('/images/hero-campus.svg');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+
+/* Inner-page banners use the quieter artwork and a slightly heavier
+   wash, since these are short and the page title must dominate. */
+.banner-bg {
+  background-color: #07281a;
+  background-image:
+    linear-gradient(
+      120deg,
+      rgba(11, 46, 29, 0.94) 0%,
+      rgba(24, 111, 66, 0.8) 60%,
+      rgba(24, 111, 66, 0.5) 100%
+    ),
+    url('/images/banner-campus.svg');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+
+/* ---------- Decorative brand pattern (stands in for photography) ---------- */
+.brand-pattern {
+  background-image:
+    radial-gradient(circle at 18% 22%, rgb(255 255 255 / 0.14) 0, transparent 42%),
+    radial-gradient(circle at 82% 78%, rgb(255 255 255 / 0.1) 0, transparent 46%),
+    repeating-linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.05) 0px,
+      rgb(255 255 255 / 0.05) 2px,
+      transparent 2px,
+      transparent 14px
+    );
+}
+
+/* ---------- Respect reduced-motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,8 @@
+Drop real photography here (hero slides, chairperson portrait, faculty photos,
+gallery images), then reference it from src/data/site.js, e.g.
+
+  image: '/images/hero-excellence.jpg'
+  photo: '/images/chairperson.jpg'
+  src:   '/images/lab-chemistry.jpg'
+
+Any entry left as `null` renders a branded placeholder instead of a broken image.
