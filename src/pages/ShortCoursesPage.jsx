@@ -1,9 +1,10 @@
+import { useId, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
 import CTASection from '../components/CTASection';
-import { certificateCourses, diplomaPrograms } from '../data/site';
-import { Check, Clock } from '../components/Icons';
+import { certificateCourses, diplomaPrograms, shortCoursesPage } from '../data/site';
+import { Check, ChevronDown, Clock } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
 
 function CourseCard({ name, duration, accent, delay }) {
@@ -41,8 +42,207 @@ function CourseCard({ name, duration, accent, delay }) {
   );
 }
 
-function CourseSection({ group, accent }) {
+/** Diploma card that expands in place to reveal its full description. */
+function DiplomaAccordionCard({ name, description, duration, delay }) {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+
+  return (
+    <Reveal delay={delay}>
+      <article className="overflow-hidden rounded-xl border border-spist-line bg-white shadow-card transition-all duration-300 hover:border-spist-accent/60 hover:shadow-e3">
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          aria-controls={panelId}
+          className="flex w-full items-start gap-4 p-5 text-left"
+        >
+          <span
+            className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
+              open ? 'bg-spist-green text-white' : 'bg-spist-green/10 text-spist-green'
+            }`}
+            aria-hidden="true"
+          >
+            <Check width="17" height="17" strokeWidth={2.5} />
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-[15px] font-bold leading-snug text-spist-charcoal">
+              {name}
+            </span>
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-spist-green/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-spist-green">
+              <Clock width="11" height="11" />
+              {duration}
+            </span>
+          </span>
+
+          <ChevronDown
+            width="18"
+            height="18"
+            className={`mt-1.5 shrink-0 text-spist-green transition-transform duration-200 ${
+              open ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
+        <div
+          id={panelId}
+          aria-hidden={!open}
+          className="grid transition-[grid-template-rows] duration-300 ease-out"
+          style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
+        >
+          <div className="overflow-hidden">
+            <p className="border-t border-spist-line px-5 pb-5 pt-4 text-[13.5px] leading-relaxed text-spist-muted">
+              {description}
+            </p>
+          </div>
+        </div>
+      </article>
+    </Reveal>
+  );
+}
+
+function IntroSection() {
+  const { heading, paragraphs } = shortCoursesPage.intro;
+
+  return (
+    <section className="bg-white py-14 sm:py-16 lg:py-20">
+      <div className="container-spist">
+        <Reveal className="mx-auto max-w-3xl space-y-4">
+          <h2 className="font-display text-2xl font-bold leading-snug text-spist-charcoal sm:text-[1.75rem]">
+            {heading}
+          </h2>
+          {paragraphs.map((paragraph, index) => (
+            <p key={index} className="text-[15px] leading-[1.85] text-spist-muted">
+              {paragraph}
+            </p>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function WhyChooseSection() {
+  const { heading, text, advantagesHeading, advantages } = shortCoursesPage.whyChoose;
+
+  return (
+    <section
+      className="bg-spist-accent-soft/45 py-14 sm:py-16 lg:py-20"
+      aria-labelledby="why-choose-heading"
+    >
+      <div className="container-spist">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <span className="eyebrow justify-center">
+            <span className="h-px w-7 bg-spist-maroon" />
+            Why SPIST
+            <span className="h-px w-7 bg-spist-maroon" />
+          </span>
+          <h2 id="why-choose-heading" className="section-title">
+            {heading}
+          </h2>
+          <p className="section-sub mx-auto">{text}</p>
+        </Reveal>
+
+        <Reveal
+          delay={120}
+          className="mt-10 rounded-xl border border-spist-line bg-white p-7 shadow-card sm:p-9"
+        >
+          <h3 className="font-display text-lg font-bold text-spist-charcoal">{advantagesHeading}</h3>
+          <ul className="mt-5 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+            {advantages.map((point) => (
+              <li key={point} className="flex items-start gap-3 text-[14.5px] leading-relaxed">
+                <span
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-spist-accent/20 text-spist-green"
+                  aria-hidden="true"
+                >
+                  <Check width="12" height="12" strokeWidth={3} />
+                </span>
+                <span className="text-spist-charcoal">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function PracticalLearningSection() {
+  const { heading, paragraphs } = shortCoursesPage.practicalLearning;
+
+  return (
+    <section
+      className="bg-white py-14 sm:py-16 lg:py-20"
+      aria-labelledby="practical-learning-heading"
+    >
+      <div className="container-spist">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 id="practical-learning-heading" className="section-title">
+            {heading}
+          </h2>
+          {paragraphs.map((paragraph, index) => (
+            <p key={index} className="section-sub mx-auto">
+              {paragraph}
+            </p>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function CareerOpportunitiesSection() {
+  const { heading, text, fields, footnote } = shortCoursesPage.careerOpportunities;
+
+  return (
+    <section
+      className="bg-spist-accent-soft/45 py-14 sm:py-16 lg:py-20"
+      aria-labelledby="career-opportunities-heading"
+    >
+      <div className="container-spist">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <span className="eyebrow justify-center">
+            <span className="h-px w-7 bg-spist-maroon" />
+            After Graduation
+            <span className="h-px w-7 bg-spist-maroon" />
+          </span>
+          <h2 id="career-opportunities-heading" className="section-title">
+            {heading}
+          </h2>
+          <p className="section-sub mx-auto">{text}</p>
+        </Reveal>
+
+        <Reveal
+          delay={120}
+          className="mt-10 rounded-xl border border-spist-line bg-white p-7 shadow-card sm:p-9"
+        >
+          <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
+            {fields.map((field) => (
+              <li key={field} className="flex items-start gap-3 text-[14.5px] leading-relaxed">
+                <span
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-spist-maroon/10 text-spist-maroon"
+                  aria-hidden="true"
+                >
+                  <Check width="12" height="12" strokeWidth={3} />
+                </span>
+                <span className="text-spist-charcoal">{field}</span>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-7 border-t border-spist-line pt-6 text-[14.5px] leading-relaxed text-spist-muted">
+            {footnote}
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function CourseSection({ group, accent, variant }) {
   const isMaroon = accent === 'maroon';
+  const isDiploma = variant === 'diploma';
 
   return (
     <section className={isMaroon ? 'bg-spist-accent-soft/45 py-14 sm:py-16 lg:py-20' : 'bg-white py-14 sm:py-16 lg:py-20'}>
@@ -64,11 +264,45 @@ function CourseSection({ group, accent }) {
           </span>
         </Reveal>
 
+        {group.tagline && (
+          <Reveal delay={50} className="mt-6 max-w-3xl">
+            <h3 className="font-display text-lg font-bold text-spist-charcoal">{group.tagline}</h3>
+          </Reveal>
+        )}
+
+        {group.intro && (
+          <Reveal delay={70} className="mt-3 max-w-3xl">
+            <p className="text-[15px] leading-relaxed text-spist-muted">{group.intro}</p>
+          </Reveal>
+        )}
+
         <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {group.items.map((name, index) => (
-            <CourseCard key={name} name={name} duration={group.duration} accent={accent} delay={(index % 6) * 70} />
-          ))}
+          {isDiploma
+            ? group.items.map((item, index) => (
+                <DiplomaAccordionCard
+                  key={item.name}
+                  name={item.name}
+                  description={item.description}
+                  duration={group.duration}
+                  delay={(index % 6) * 70}
+                />
+              ))
+            : group.items.map((name, index) => (
+                <CourseCard
+                  key={name}
+                  name={name}
+                  duration={group.duration}
+                  accent={accent}
+                  delay={(index % 6) * 70}
+                />
+              ))}
         </div>
+
+        {group.footnote && (
+          <Reveal delay={100} className="mt-7 max-w-3xl">
+            <p className="text-[14px] leading-relaxed text-spist-muted">{group.footnote}</p>
+          </Reveal>
+        )}
       </div>
     </section>
   );
@@ -89,8 +323,14 @@ export default function ShortCoursesPage({ intro }) {
         }
       />
 
-      <CourseSection group={diplomaPrograms} accent="green" />
-      <CourseSection group={certificateCourses} accent="maroon" />
+      <IntroSection />
+      <WhyChooseSection />
+
+      <CourseSection group={diplomaPrograms} accent="green" variant="diploma" />
+      <CourseSection group={certificateCourses} accent="maroon" variant="certificate" />
+
+      <PracticalLearningSection />
+      <CareerOpportunitiesSection />
 
       <CTASection />
     </>
