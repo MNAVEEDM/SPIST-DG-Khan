@@ -256,11 +256,11 @@
   background-image:
     linear-gradient(
       120deg,
-      rgba(11, 46, 29, 0.92) 0%,
-      rgba(24, 111, 66, 0.75) 55%,
-      rgba(24, 111, 66, 0.4) 100%
+      rgba(11, 46, 29, 0.6) 0%,
+      rgba(24, 111, 66, 0.4) 55%,
+      rgba(24, 111, 66, 0.12) 100%
     ),
-    url('/images/hero-campus.svg');
+    url('/hero/hero background.jpeg');
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;

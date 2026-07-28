@@ -26,11 +26,14 @@ function CourseColumn({ group, accent, delay }) {
         >
           <div className="brand-pattern absolute inset-0 opacity-70" aria-hidden="true" />
 
-          <div className="relative flex flex-wrap items-center justify-between gap-3">
-            <h3 id={`courses-${accent}`} className="font-display text-xl font-bold text-white">
+          <div className="relative flex flex-col items-start gap-3">
+            <h3
+              id={`courses-${accent}`}
+              className="w-full font-display text-xl font-bold text-white"
+            >
               {group.title}
             </h3>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-wider text-white ring-1 ring-white/25">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/15 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-wider text-white ring-1 ring-white/25">
               <Clock width="12" height="12" />
               {group.duration}
             </span>

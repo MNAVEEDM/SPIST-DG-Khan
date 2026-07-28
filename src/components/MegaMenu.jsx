@@ -82,8 +82,8 @@ export default function MegaMenu({ item, isOpen, onOpen, onClose }) {
               'relative flex items-center whitespace-nowrap px-2.5 py-4 text-[13px] font-semibold uppercase tracking-wide transition-colors duration-200',
               'after:absolute after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
               isActive
-                ? 'text-white after:bg-spist-maroon'
-                : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white/40',
+                ? 'text-white after:bg-white'
+                : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white',
             ].join(' ')
           }
         >
@@ -127,8 +127,8 @@ export default function MegaMenu({ item, isOpen, onOpen, onClose }) {
           'relative flex items-center gap-1 whitespace-nowrap px-2.5 py-4 text-[13px] font-semibold uppercase tracking-wide transition-colors duration-200',
           'after:absolute after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
           containsActivePath
-            ? 'text-white after:bg-spist-maroon'
-            : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white/40',
+            ? 'text-white after:bg-white'
+            : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white',
         ].join(' ')}
       >
         {item.label}

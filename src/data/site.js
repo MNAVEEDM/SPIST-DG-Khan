@@ -50,16 +50,7 @@ export const navigation = [
       { label: "Chairperson's Message", href: '/discover/chairpersons-message' },
       { label: 'Mission Statement', href: '/discover/mission' },
       { label: 'Vision Statement', href: '/discover/vision' },
-      {
-        label: 'Offices',
-        children: [
-          { label: "Dean's Office", href: '/discover/offices/deans-office' },
-          { label: 'Directorate of Student Affairs (DSA)', href: '/dsa' },
-          { label: 'Treasurer Office', href: '/treasurer' },
-          { label: 'Examination Department', href: '/examination' },
-          { label: 'Library', href: '/library' },
-        ],
-      },
+      { label: "Dean's Office", href: '/discover/offices/deans-office' },
     ],
   },
 
@@ -166,12 +157,13 @@ export const stats = [
 export const chairperson = {
   name: 'Dr. Mina Ehsan Leghari',
   role: 'Chairperson',
-  institution: 'South Punjab Institute of Science & Technology, D.G. Khan',
+  institution: 'South Punjab Institute of Science and Technology (SPIST), Dera Ghazi Khan',
   photo: null, // PLACEHOLDER — '/images/chairperson.jpg'
   paragraphs: [
-    'It gives me immense pleasure to welcome you to the South Punjab Institute of Science & Technology. SPIST was founded on a simple conviction: that the young people of Dera Ghazi Khan and the wider South Punjab region deserve access to higher education of the same standard available anywhere in the country.',
-    'Our faculties of Pure and Applied Sciences, Arts and Social Sciences, and Languages combine rigorous academic instruction with practical, laboratory-based and skills-oriented learning. Alongside our degree programs, our six-month diplomas and three-month certificate courses equip students with employable skills in a short span of time.',
-    'At SPIST we believe education is not confined to the lecture hall. Through research, co-curricular activities and community engagement, we aim to produce graduates who are not only professionally competent but also responsible, ethical citizens of Pakistan.',
+    'Welcome to the South Punjab Institute of Science and Technology (SPIST), Dera Ghazi Khan.',
+    'At SPIST, we envision an institution where knowledge inspires innovation, education transforms lives, and research drives sustainable development. Our mission is to provide quality higher education that empowers students with academic excellence, professional competence, ethical values, and the leadership skills needed to shape the future.',
+    'As a Higher Education Commission (HEC) recognized institution, we are committed to fostering a culture of learning, creativity, and discovery while expanding educational opportunities for the youth of South Punjab, particularly those from underserved and remote communities.',
+    'We invite you to join SPIST in our pursuit of excellence as we prepare the next generation of leaders, innovators, and responsible citizens who will contribute to the progress of Pakistan and the global community.',
   ],
   readMoreHref: '/discover/chairpersons-message',
 };
@@ -276,6 +268,8 @@ export const diplomaPrograms = {
   title: 'Six-Month Diploma Programs',
   duration: '6 Months',
   href: '/academic/short-courses',
+  intro:
+    'Our Six-Month Diploma Programs provide comprehensive training designed to develop both technical knowledge and practical experience. Each diploma equips students with the skills required to excel in today’s competitive job market.',
   items: [
     'Diploma in Artificial Intelligence',
     'Diploma in Information Technology',
@@ -294,6 +288,8 @@ export const certificateCourses = {
   title: 'Three-Month Professional Certificate Courses',
   duration: '3 Months',
   href: '/academic/short-courses',
+  intro:
+    'SPIST’s Professional Certificate Courses are designed for learners seeking rapid skill development through practical, industry-focused training. These short-term programs provide valuable knowledge that can immediately improve employability and career prospects.',
   items: [
     'Certificate in Information Technology (IT)',
     'Certificate in Computer Applications',

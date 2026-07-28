@@ -58,7 +58,7 @@ export default function ChairpersonMessage() {
             </span>
 
             <h2 id="chairperson-heading" className="section-title">
-              Chairperson&rsquo;s Message
+              Message from the Chairperson
             </h2>
 
             <Quote className="mt-6 text-spist-accent/50" width="34" height="34" />
