@@ -12,6 +12,7 @@ function CourseColumn({ group, accent, delay }) {
 
   const hidden = group.items.length - INITIAL_VISIBLE;
   const visibleItems = expanded ? group.items : group.items.slice(0, INITIAL_VISIBLE);
+  const labelFor = (item) => (typeof item === 'string' ? item : item.name);
 
   return (
     <Reveal delay={delay}>
@@ -46,7 +47,7 @@ function CourseColumn({ group, accent, delay }) {
 
         <ul className="flex-1 divide-y divide-spist-line/70 px-7">
           {visibleItems.map((item) => (
-            <li key={item} className="flex items-start gap-3 py-3 text-[14.5px] leading-snug">
+            <li key={labelFor(item)} className="flex items-start gap-3 py-3 text-[14.5px] leading-snug">
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
                   isMaroon
@@ -57,7 +58,7 @@ function CourseColumn({ group, accent, delay }) {
               >
                 <Check width="12" height="12" strokeWidth={3} />
               </span>
-              <span className="text-spist-charcoal">{item}</span>
+              <span className="text-spist-charcoal">{labelFor(item)}</span>
             </li>
           ))}
         </ul>

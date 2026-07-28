@@ -1,17 +1,17 @@
-import { visionMission } from '../data/site';
+import { mission, vision } from '../data/site';
 import { Check, Eye, Target } from './Icons';
 import Reveal from './Reveal';
 
 const CARDS = [
   {
     key: 'vision',
-    data: visionMission.vision,
+    data: vision,
     Icon: Eye,
     accent: 'green',
   },
   {
     key: 'mission',
-    data: visionMission.mission,
+    data: mission,
     Icon: Target,
     accent: 'maroon',
   },
