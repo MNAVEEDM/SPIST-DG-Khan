@@ -260,7 +260,7 @@
       rgba(24, 111, 66, 0.4) 55%,
       rgba(24, 111, 66, 0.12) 100%
     ),
-    url('/hero/hero background.jpeg');
+    url('/hero/hero background.png');
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;

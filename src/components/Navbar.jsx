@@ -117,7 +117,7 @@ export default function Navbar() {
             <Logo
               chip
               className={`w-auto transition-[height] duration-300 ease-out ${
-                scrolled ? 'h-9' : 'h-11'
+                scrolled ? 'h-11' : 'h-14'
               }`}
             />
           </Link>

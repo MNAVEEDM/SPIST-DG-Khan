@@ -48,9 +48,24 @@ export const navigation = [
     children: [
       { label: 'Overview', href: '/discover/overview' },
       { label: "Chairperson's Message", href: '/discover/chairpersons-message' },
-      { label: 'Mission Statement', href: '/discover/mission' },
-      { label: 'Vision Statement', href: '/discover/vision' },
-      { label: "Dean's Office", href: '/discover/offices/deans-office' },
+      { label: 'Vision & Mission', href: '/discover/vision-mission' },
+      {
+        label: "Dean's Office",
+        children: [
+          { label: 'Rector Office', href: '/discover/offices/rector-office' },
+          { label: 'Administration Offices', href: '/discover/offices/administration-offices' },
+          { label: 'Examination Department', href: '/examination' },
+          { label: 'Finance Office', href: '/treasurer' },
+          { label: 'DSA', href: '/dsa' },
+          { label: 'ORIC', href: '/oric' },
+          { label: 'QEC', href: '/qec' },
+          { label: 'Central Library', href: '/library' },
+          { label: 'Security Office', href: '/discover/offices/security-office' },
+          { label: 'Health Care Centre', href: '/discover/offices/health-care-centre' },
+          { label: 'Web Development', href: '/discover/offices/web-development' },
+          { label: 'Software Cell', href: '/discover/offices/software-cell' },
+        ],
+      },
     ],
   },
 
@@ -83,8 +98,11 @@ export const navigation = [
         children: [{ label: 'Department of English', href: '/academic/english' }],
       },
       { label: 'Diploma & Certificate Programs', href: '/academic/short-courses' },
+      { label: 'Our Faculty', href: '/academic/faculty' },
     ],
   },
+
+  { label: 'Latest News', href: '/latest-news' },
 
   { label: 'ORIC', href: '/oric', title: 'Office of Research, Innovation & Commercialization' },
   { label: 'QEC', href: '/qec', title: 'Quality Enhancement Cell' },
@@ -251,7 +269,7 @@ export const chairpersonFullMessage = {
  * ------------------------------------------------------------------------ */
 export const vision = {
   title: 'Our Vision',
-  text: 'To be a leading institute of higher learning in South Punjab — recognised for academic excellence, scientific research and the character of its graduates — and to make quality education accessible to every deserving student of the region.',
+  text: 'To be a leading university of excellence in teaching, research, innovation, and community engagement, transforming lives through accessible, quality higher education, particularly for the people of South Punjab, including underserved, rural, and remote areas, and producing graduates who contribute to sustainable national and global development.',
   points: [
     'A centre of academic and research excellence in South Punjab',
     'Graduates equipped to compete nationally and internationally',
@@ -261,7 +279,7 @@ export const vision = {
 
 export const mission = {
   title: 'Our Mission',
-  text: 'To provide affordable, high-quality education through highly trained faculty, modern teaching methodology and well-equipped laboratories, while nurturing research, innovation, ethical values and lifelong learning in every student.',
+  text: 'The South Punjab Institute of Science & Technology (SPIST) is committed to providing accessible, affordable, and quality higher education through academic excellence, research, innovation, and professional development. The Institute strives to empower students—especially those from rural, remote, and underserved communities of South Punjab—by fostering critical thinking, ethical values, entrepreneurship, lifelong learning, and industry-academia collaboration. SPIST is dedicated to promoting inclusive education, advancing knowledge, and producing competent graduates who contribute to the socio-economic development and prosperity of Pakistan.',
   points: [
     'Deliver rigorous, industry-relevant academic programs',
     'Promote research, innovation and commercialisation through ORIC',
@@ -421,7 +439,7 @@ export const certificateCourses = {
     'Certificate in Computer Applications',
     'Certificate in Office Management',
     'Certificate in English Language Proficiency',
-    'Certificate in Spoken English & Communication Skills',
+    'Department of English Language and Literature',
     'Certificate in Digital Marketing',
     'Certificate in Graphic Designing',
     'Certificate in Web Development',
@@ -700,7 +718,12 @@ export const galleryCategories = ['All', 'Labs', 'Events', 'Campus'];
 export const galleryItems = [
   { id: 1, category: 'Labs', caption: 'Chemistry Research Laboratory', src: null },
   { id: 2, category: 'Campus', caption: 'Main Academic Block', src: null },
-  { id: 3, category: 'Events', caption: 'Annual Science Exhibition', src: null },
+  {
+    id: 3,
+    category: 'Events',
+    caption: 'Annual Science Exhibition',
+    src: '/campus gallary/events/event 1.jpeg',
+  },
   { id: 4, category: 'Labs', caption: 'Computer Science Lab', src: null },
   { id: 5, category: 'Campus', caption: 'Central Library', src: null },
   { id: 6, category: 'Events', caption: 'Convocation Ceremony', src: null },
@@ -718,4 +741,5 @@ export const footerDepartments = [
   { label: 'Faculty of Arts and Social Sciences', href: '/academic/arts-and-social-sciences' },
   { label: 'Six-Month Diploma Programs', href: '/admissions/diploma-programs' },
   { label: 'Three-Month Certificate Courses', href: '/admissions/certificate-courses' },
+  { label: 'Our Faculty', href: '/academic/faculty' },
 ];

@@ -67,6 +67,34 @@ function FacultyCard({ member, delay }) {
   );
 }
 
+/** The department-by-department faculty listing, shared by the homepage
+ *  teaser section below and the dedicated Faculty page. */
+export function FacultyDirectory() {
+  return (
+    <>
+      {facultyMembers.map((department) => (
+        <div key={department.department} className="mt-12 first:mt-0">
+          <Reveal className="mb-6 flex items-center gap-4">
+            <h3 className="font-display text-lg font-bold text-spist-green">
+              {department.department}
+            </h3>
+            <span className="h-px flex-1 bg-spist-line" aria-hidden="true" />
+            <span className="text-[12.5px] font-medium text-spist-muted">
+              {department.members.length} members
+            </span>
+          </Reveal>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {department.members.map((member, index) => (
+              <FacultyCard key={member.name} member={member} delay={(index % 3) * 110} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export default function FacultyGrid() {
   return (
     <section className="bg-white py-16 sm:py-20 lg:py-24" aria-labelledby="faculty-heading">
@@ -95,25 +123,7 @@ export default function FacultyGrid() {
           </Link>
         </Reveal>
 
-        {facultyMembers.map((department) => (
-          <div key={department.department} className="mt-12">
-            <Reveal className="mb-6 flex items-center gap-4">
-              <h3 className="font-display text-lg font-bold text-spist-green">
-                {department.department}
-              </h3>
-              <span className="h-px flex-1 bg-spist-line" aria-hidden="true" />
-              <span className="text-[12.5px] font-medium text-spist-muted">
-                {department.members.length} members
-              </span>
-            </Reveal>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {department.members.map((member, index) => (
-                <FacultyCard key={member.name} member={member} delay={(index % 3) * 110} />
-              ))}
-            </div>
-          </div>
-        ))}
+        <FacultyDirectory />
       </div>
     </section>
   );

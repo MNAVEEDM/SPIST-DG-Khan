@@ -4,8 +4,9 @@ import InnerPage from './pages/InnerPage';
 import Academic from './pages/Academic';
 import ShortCoursesPage from './pages/ShortCoursesPage';
 import ChairpersonMessagePage from './pages/ChairpersonMessagePage';
-import VisionPage from './pages/VisionPage';
-import MissionPage from './pages/MissionPage';
+import VisionMissionPage from './pages/VisionMissionPage';
+import FacultyPage from './pages/FacultyPage';
+import LatestNewsPage from './pages/LatestNewsPage';
 import ChemistryDepartment from './pages/departments/ChemistryDepartment';
 import ComputerScienceDepartment from './pages/departments/ComputerScienceDepartment';
 import EnglishDepartment from './pages/departments/EnglishDepartment';
@@ -26,11 +27,12 @@ const CUSTOM_PAGES = {
   '/academic': Academic,
   '/academic/short-courses': ShortCoursesPage,
   '/discover/chairpersons-message': ChairpersonMessagePage,
-  '/discover/vision': VisionPage,
-  '/discover/mission': MissionPage,
+  '/discover/vision-mission': VisionMissionPage,
   '/academic/chemistry': ChemistryDepartment,
   '/academic/computer-science': ComputerScienceDepartment,
   '/academic/english': EnglishDepartment,
+  '/academic/faculty': FacultyPage,
+  '/latest-news': LatestNewsPage,
 };
 
 /** Short intro lines shown in the banner of specific inner pages. */

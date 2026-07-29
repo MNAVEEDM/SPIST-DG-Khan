@@ -5,7 +5,14 @@ import { iconFor } from './AcademicPrograms';
 import { Book, Clock, Mail, User } from './Icons';
 import { navEntryFor } from '../data/navUtils';
 
-const COLUMNS = ['S/No', 'Name', 'Qualification', 'Institution / University', 'Designation', 'Nature of Appointment'];
+/** Deterministic gradient per card so the grid reads as varied, not random —
+ *  same palette used for the Campus Gallery placeholder tiles. */
+const TILE_GRADIENTS = [
+  'from-spist-green-deep via-spist-green to-spist-green-dark',
+  'from-spist-green-dark via-spist-green to-spist-accent',
+  'from-[#5e0a08] via-spist-maroon-dark to-spist-green-deep',
+  'from-spist-green via-spist-accent to-spist-green-dark',
+];
 
 /**
  * Shared template for every department subsection page (Chemistry, Computer
@@ -132,95 +139,59 @@ export default function DepartmentPage({
           </Reveal>
 
           {facultyList.length > 0 ? (
-            <Reveal delay={100}>
-              {/* Desktop / tablet table */}
-              <div className="mt-9 hidden overflow-hidden rounded-xl border border-spist-line shadow-card md:block">
-                <table className="w-full border-collapse text-left text-[13.5px]">
-                  <thead>
-                    <tr className="bg-spist-green text-white">
-                      {COLUMNS.map((column) => (
-                        <th
-                          key={column}
-                          scope="col"
-                          className="px-5 py-3.5 text-[11.5px] font-bold uppercase tracking-wider first:w-16"
-                        >
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-spist-line bg-white">
-                    {facultyList.map((member, index) => (
-                      <tr key={member.name} className="transition-colors hover:bg-spist-accent-soft/50">
-                        <td className="px-5 py-3.5 text-spist-muted">{index + 1}</td>
-                        <td className="px-5 py-3.5 font-semibold text-spist-charcoal">{member.name}</td>
-                        <td className="px-5 py-3.5 text-spist-muted">{member.qualification}</td>
-                        <td className="px-5 py-3.5 text-spist-muted">{member.institution}</td>
-                        <td className="px-5 py-3.5 text-spist-muted">{member.designation}</td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center rounded-full bg-spist-accent/20 px-2.5 py-1 text-[11.5px] font-semibold text-spist-green">
-                            {member.appointment ?? '—'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile card list */}
-              <ul className="mt-9 space-y-4 md:hidden">
-                {facultyList.map((member, index) => (
-                  <li
-                    key={member.name}
-                    className="rounded-xl border border-spist-line bg-white p-5 shadow-card"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
+            <div className="mt-9 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+              {facultyList.map((member, index) => (
+                <Reveal key={member.name} delay={(index % 4) * 90}>
+                  <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-spist-line bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-e3">
+                    {/* Photo / placeholder — same treatment as the Campus Gallery tiles */}
+                    <div className="relative aspect-square w-full overflow-hidden bg-spist-green">
+                      {member.photo ? (
+                        <img
+                          src={member.photo}
+                          alt={`${member.name}, ${member.designation}`}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                      ) : (
                         <span
-                          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-spist-green/10 text-spist-green"
-                          aria-hidden="true"
+                          className={`brand-pattern flex h-full w-full items-center justify-center bg-gradient-to-br ${
+                            TILE_GRADIENTS[index % TILE_GRADIENTS.length]
+                          } transition-transform duration-300 group-hover:scale-110`}
+                          role="img"
+                          aria-label={`${member.name} — photograph to be added`}
                         >
-                          <User width="17" height="17" />
+                          <User width="34" height="34" className="text-white/45" strokeWidth={1.3} aria-hidden="true" />
                         </span>
-                        <div>
-                          <p className="font-display text-[15px] font-bold leading-snug">
-                            {member.name}
-                          </p>
-                          <p className="text-[12.5px] font-semibold uppercase tracking-wide text-spist-maroon">
-                            {member.designation}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="shrink-0 rounded-full bg-spist-accent-soft px-2 py-0.5 text-[11px] font-bold text-spist-muted">
-                        #{index + 1}
-                      </span>
+                      )}
                     </div>
 
-                    <dl className="mt-4 space-y-2 border-t border-spist-line pt-3 text-[13px]">
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-spist-muted">Qualification</dt>
-                        <dd className="text-right font-medium text-spist-charcoal">
-                          {member.qualification}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-spist-muted">Institution</dt>
-                        <dd className="text-right font-medium text-spist-charcoal">
-                          {member.institution}
-                        </dd>
-                      </div>
-                      <div className="flex justify-between gap-3">
-                        <dt className="text-spist-muted">Appointment</dt>
-                        <dd className="text-right font-medium text-spist-green">
-                          {member.appointment ?? '—'}
-                        </dd>
-                      </div>
-                    </dl>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
+                    {/* Details */}
+                    <div className="flex flex-1 flex-col p-4">
+                      <h3 className="font-display text-[14.5px] font-bold leading-snug text-spist-charcoal">
+                        {member.name}
+                      </h3>
+                      <p className="mt-1 text-[11.5px] font-semibold uppercase tracking-wide text-spist-maroon">
+                        {member.designation}
+                      </p>
+
+                      <dl className="mt-3 flex-1 space-y-1.5 border-t border-spist-line pt-3 text-[12.5px] leading-snug text-spist-muted">
+                        <div>
+                          <dt className="sr-only">Qualification</dt>
+                          <dd className="font-medium text-spist-charcoal">{member.qualification}</dd>
+                        </div>
+                        <div>
+                          <dt className="sr-only">Institution</dt>
+                          <dd>{member.institution}</dd>
+                        </div>
+                      </dl>
+
+                      <span className="mt-3 inline-flex w-fit items-center rounded-full bg-spist-accent/20 px-2.5 py-1 text-[11px] font-semibold text-spist-green">
+                        {member.appointment ?? '—'}
+                      </span>
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
           ) : (
             <Reveal delay={100}>
               <div className="mt-9 flex flex-col items-center gap-3 rounded-xl border border-dashed border-spist-accent/50 bg-white px-6 py-12 text-center">
