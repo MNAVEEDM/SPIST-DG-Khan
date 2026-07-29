@@ -42,9 +42,6 @@ export default function ChairpersonMessage() {
                 {/* Name plate */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-spist-charcoal/90 to-transparent px-6 pb-5 pt-14">
                   <p className="font-display text-lg font-bold text-white">{chairperson.name}</p>
-                  <p className="mt-0.5 text-[12.5px] font-medium uppercase tracking-[0.13em] text-spist-accent">
-                    {chairperson.role}
-                  </p>
                 </div>
               </div>
             </div>
@@ -83,7 +80,7 @@ export default function ChairpersonMessage() {
               <span className="text-[13px] text-spist-muted">
                 <span className="font-semibold text-spist-charcoal">{chairperson.name}</span>
                 {' — '}
-                {chairperson.role}, {chairperson.institution}
+                {chairperson.institution}
               </span>
             </div>
           </Reveal>

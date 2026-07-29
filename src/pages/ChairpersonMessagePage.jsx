@@ -100,9 +100,6 @@ export default function ChairpersonMessagePage() {
 
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-spist-charcoal/90 to-transparent px-6 pb-5 pt-14">
                     <p className="font-display text-lg font-bold text-white">{chairperson.name}</p>
-                    <p className="mt-0.5 text-[12.5px] font-medium uppercase tracking-[0.13em] text-spist-accent">
-                      {chairperson.role}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -115,7 +112,7 @@ export default function ChairpersonMessagePage() {
               </span>
 
               <h2 id="chairperson-heading" className="section-title">
-                A Message From Our Chairperson
+                Chairperson Message
               </h2>
 
               <Quote className="mt-6 text-spist-accent/50" width="34" height="34" />
@@ -131,7 +128,7 @@ export default function ChairpersonMessagePage() {
               <p className="mt-7 text-[13px] text-spist-muted">
                 <span className="font-semibold text-spist-charcoal">{chairperson.name}</span>
                 {' — '}
-                {chairperson.role}, {chairperson.institution}
+                {chairperson.institution}
               </p>
             </Reveal>
           </div>
