@@ -37,7 +37,7 @@ export const institution = {
  * Shape:
  *   { label, href }                          → plain link
  *   { label, href, children: [...] }         → level-2 dropdown panel
- *   { label, children: [...] }  (inside)     → level-3 nested flyout  (»)
+ *   { label, children: [...] }  (inside)     → nested flyout (»), any depth
  * ------------------------------------------------------------------------ */
 export const navigation = [
   { label: 'Home', href: '/' },
@@ -50,17 +50,98 @@ export const navigation = [
       { label: "Chairperson's Message", href: '/discover/chairpersons-message' },
       { label: 'Vision & Mission', href: '/discover/vision-mission' },
       {
-        label: "Dean's Office",
+        label: 'Office',
         children: [
-          { label: 'Rector Office', href: '/discover/offices/rector-office' },
-          { label: 'Administration Offices', href: '/discover/offices/administration-offices' },
-          { label: 'Examination Department', href: '/examination' },
-          { label: 'Finance Office', href: '/treasurer' },
-          { label: 'DSA', href: '/dsa' },
-          { label: 'ORIC', href: '/oric' },
-          { label: 'QEC', href: '/qec' },
-          { label: 'Central Library', href: '/library' },
-          { label: 'Security Office', href: '/discover/offices/security-office' },
+          {
+            label: 'Rector',
+            children: [
+              { label: 'Rector Office', href: '/discover/offices/rector-office/rector-office' },
+              { label: 'PS to Rector', href: '/discover/offices/rector-office/ps-to-rector' },
+            ],
+          },
+          {
+            label: 'Administration Offices',
+            children: [
+              { label: 'Registrar', href: '/discover/offices/administration-offices/registrar' },
+              {
+                label: 'Admin Office',
+                href: '/discover/offices/administration-offices/admin-office',
+              },
+              {
+                label: 'Registration Branch',
+                href: '/discover/offices/administration-offices/registration-branch',
+              },
+            ],
+          },
+          {
+            label: 'Examination Department',
+            children: [
+              {
+                label: 'Controller Examination',
+                href: '/discover/offices/examination-department/controller-examination',
+              },
+              {
+                label: 'Asst Controller of Examination',
+                href: '/discover/offices/examination-department/asst-controller-of-examination',
+              },
+              {
+                label: 'Form Section',
+                href: '/discover/offices/examination-department/form-section',
+              },
+              {
+                label: 'Conduct Branch',
+                href: '/discover/offices/examination-department/conduct-branch',
+              },
+              {
+                label: 'Results Section',
+                href: '/discover/offices/examination-department/results-section',
+              },
+            ],
+          },
+          {
+            label: 'Finance Office',
+            children: [
+              {
+                label: 'Treasurer Office',
+                href: '/discover/offices/finance-office/treasurer-office',
+              },
+              { label: 'Account Office', href: '/discover/offices/finance-office/account-office' },
+              { label: 'Staff Office', href: '/discover/offices/finance-office/staff-office' },
+            ],
+          },
+          {
+            label: 'DSA',
+            children: [
+              {
+                label: 'Director Student Office',
+                href: '/discover/offices/dsa/director-student-office',
+              },
+            ],
+          },
+          { label: 'ORIC Office', href: '/oric' },
+          {
+            label: 'QEC',
+            children: [
+              { label: 'Director Office', href: '/discover/offices/qec/director-office' },
+              { label: 'Deputy Director', href: '/discover/offices/qec/deputy-director' },
+              { label: 'Our Staff Office', href: '/discover/offices/qec/our-staff-office' },
+            ],
+          },
+          {
+            label: 'Central Library',
+            children: [
+              { label: 'Librarian', href: '/discover/offices/central-library/librarian' },
+            ],
+          },
+          {
+            label: 'Security Office',
+            children: [
+              {
+                label: 'Chief Security Office',
+                href: '/discover/offices/security-office/chief-security-office',
+              },
+            ],
+          },
           { label: 'Health Care Centre', href: '/discover/offices/health-care-centre' },
           { label: 'Web Development', href: '/discover/offices/web-development' },
           { label: 'Software Cell', href: '/discover/offices/software-cell' },
@@ -92,7 +173,6 @@ export const navigation = [
           { label: 'Department of Computer Science', href: '/academic/computer-science' },
         ],
       },
-      { label: 'Faculty of Arts and Social Sciences', href: '/academic/arts-and-social-sciences' },
       {
         label: 'Faculty of Languages',
         children: [{ label: 'Department of English', href: '/academic/english' }],
@@ -104,7 +184,27 @@ export const navigation = [
 
   { label: 'Latest News', href: '/latest-news' },
 
-  { label: 'ORIC', href: '/oric', title: 'Office of Research, Innovation & Commercialization' },
+  {
+    label: 'ORIC',
+    href: '/oric',
+    title: 'Office of Research, Innovation & Commercialization',
+    children: [
+      {
+        label: 'Interdisciplinary Research',
+        href: '/oric/interdisciplinary-research',
+        children: [
+          { label: 'Measurement', href: '/oric/interdisciplinary-research/measurement' },
+          { label: 'Physical Facilities', href: '/oric/interdisciplinary-research/physical-facilities' },
+          {
+            label: 'Administrative Support',
+            href: '/oric/interdisciplinary-research/administrative-support',
+          },
+        ],
+      },
+      { label: 'Research Journal', href: '/oric/research-journal' },
+      { label: 'ORIC Introduction', href: '/oric/oric-introduction' },
+    ],
+  },
   { label: 'QEC', href: '/qec', title: 'Quality Enhancement Cell' },
   { label: 'Examination', href: '/examination' },
   { label: 'DSA', href: '/dsa', title: 'Directorate of Student Affairs' },
@@ -163,7 +263,7 @@ export const heroSlides = [
  * ------------------------------------------------------------------------ */
 export const stats = [
   { id: 'years', value: 12, suffix: '+', label: 'Years of Service' }, // PLACEHOLDER
-  { id: 'faculties', value: 3, suffix: '', label: 'Faculties' },
+  { id: 'faculties', value: 2, suffix: '', label: 'Faculties' },
   { id: 'departments', value: 3, suffix: '', label: 'Departments' },
   { id: 'students', value: 1200, suffix: '+', label: 'Enrolled Students' }, // PLACEHOLDER
   { id: 'teachers', value: 45, suffix: '+', label: 'Faculty Members' }, // PLACEHOLDER
@@ -303,7 +403,7 @@ export const faculties = [
         department: 'Department of Chemistry',
         duration: '4 Years',
         degreeType: 'Bachelor Degree',
-        credits: '133 Credit Hours', // PLACEHOLDER
+        credits: '139 Credit Hours',
         href: '/academic/chemistry',
       },
       {
@@ -311,26 +411,8 @@ export const faculties = [
         department: 'Department of Computer Science',
         duration: '2 Years',
         degreeType: 'Associate Degree',
-        credits: '68 Credit Hours', // PLACEHOLDER
+        credits: '72 Credit Hours',
         href: '/academic/computer-science',
-      },
-    ],
-  },
-  {
-    id: 'arts-social-sciences',
-    name: 'Faculty of Arts and Social Sciences',
-    short: 'Arts & Social Sciences',
-    blurb:
-      'Programs exploring society, human behaviour and culture — developing the critical and analytical skills that underpin public life.',
-    programs: [
-      {
-        // PLACEHOLDER — replace with the confirmed program list for this faculty
-        name: 'Programs Announced Shortly',
-        department: 'Faculty of Arts and Social Sciences',
-        duration: '—',
-        degreeType: 'Details to be announced',
-        credits: '—',
-        href: '/academic/arts-and-social-sciences',
       },
     ],
   },
@@ -359,10 +441,10 @@ export const faculties = [
  * Certificate Programs page (also used in the homepage short-courses strip
  * and the matching Admissions sub-pages).
  *
- * `diplomaPrograms.items` carries a `description` per entry so the Diploma &
- * Certificate Programs page can render each one as an expandable accordion.
- * `certificateCourses.items` stays a plain string list — certificates are
- * not expandable.
+ * Both `diplomaPrograms.items` and `certificateCourses.items` carry a
+ * `description` per entry so the Diploma & Certificate Programs page can
+ * render each one as an expandable accordion (collapsed by default, revealed
+ * on click).
  * ------------------------------------------------------------------------ */
 export const diplomaPrograms = {
   title: 'Six-Month Diploma Programs',
@@ -435,22 +517,87 @@ export const certificateCourses = {
   footnote:
     'Each course combines theoretical understanding with practical learning to help students develop job-ready skills within a short period.',
   items: [
-    'Certificate in Information Technology (IT)',
-    'Certificate in Computer Applications',
-    'Certificate in Office Management',
-    'Certificate in English Language Proficiency',
-    'Department of English Language and Literature',
-    'Certificate in Digital Marketing',
-    'Certificate in Graphic Designing',
-    'Certificate in Web Development',
-    'Certificate in Artificial Intelligence Fundamentals',
-    'Certificate in Entrepreneurship & Small Business Management',
-    'Certificate in E-Commerce',
-    'Certificate in Freelancing Skills',
-    'Certificate in Data Analytics',
-    'Certificate in Social Media Marketing',
-    'Certificate in Business Communication',
-    'Certificate in Educational Leadership & Management',
+    {
+      name: 'Certificate in Information Technology (IT)',
+      description:
+        'Build essential IT skills by learning computer fundamentals, operating systems, internet usage, hardware basics, and productivity tools. This certificate prepares learners for entry-level IT support and digital workplace roles.',
+    },
+    {
+      name: 'Certificate in Computer Applications',
+      description:
+        'Develop practical computer skills by learning word processing, spreadsheets, presentations, databases, and office automation. This certificate enhances digital productivity for academic and professional environments.',
+    },
+    {
+      name: 'Certificate in Office Management',
+      description:
+        'Learn modern office administration, document handling, communication, scheduling, and record management. This certificate prepares learners for efficient administrative and office support roles.',
+    },
+    {
+      name: 'Certificate in English Language Proficiency',
+      description:
+        'Improve your English speaking, listening, reading, and writing skills for academic, professional, and everyday communication. This certificate builds confidence in using English effectively.',
+    },
+    {
+      // NOTE: name kept as supplied — doesn't follow the "Certificate in ..." pattern of the rest of this list; flagged for review, not renamed.
+      name: 'Department of English Language and Literature',
+      description:
+        'Explore the fundamentals of English language and literature through grammar, reading, writing, and literary analysis. This certificate strengthens communication and critical thinking skills.',
+    },
+    {
+      name: 'Certificate in Digital Marketing',
+      description:
+        'Learn the basics of digital marketing, including social media, SEO, content creation, email marketing, and online advertising. This certificate prepares learners for the digital business landscape.',
+    },
+    {
+      name: 'Certificate in Graphic Designing',
+      description:
+        'Develop creative design skills by learning typography, branding, image editing, and visual communication using industry-standard design tools. This certificate prepares learners for entry-level design projects.',
+    },
+    {
+      name: 'Certificate in Web Development',
+      description:
+        'Learn the fundamentals of website development by exploring HTML, CSS, responsive design, and basic JavaScript. This certificate provides a strong foundation for building modern websites.',
+    },
+    {
+      name: 'Certificate in Artificial Intelligence Fundamentals',
+      description:
+        'Discover the basics of Artificial Intelligence, machine learning concepts, automation, and AI-powered technologies. This certificate introduces learners to the rapidly growing field of AI.',
+    },
+    {
+      name: 'Certificate in Entrepreneurship & Small Business Management',
+      description:
+        'Learn the essentials of entrepreneurship, business planning, financial management, and customer engagement. This certificate equips learners with the knowledge to start and manage small businesses.',
+    },
+    {
+      name: 'Certificate in E-Commerce',
+      description:
+        'Understand the fundamentals of online business by learning e-commerce platforms, digital payments, product management, and customer experience. This certificate prepares learners for the digital marketplace.',
+    },
+    {
+      name: 'Certificate in Freelancing Skills',
+      description:
+        'Build the skills needed to succeed as a freelancer by learning client communication, project management, online platforms, and personal branding. This certificate helps learners start and grow a freelance career.',
+    },
+    {
+      name: 'Certificate in Data Analytics',
+      description:
+        'Learn the fundamentals of data analysis, data visualization, spreadsheets, and reporting techniques. This certificate prepares learners to make informed, data-driven decisions.',
+    },
+    {
+      name: 'Certificate in Social Media Marketing',
+      description:
+        'Master the basics of social media marketing by learning content planning, audience engagement, campaign management, and performance tracking. This certificate helps learners build effective online marketing skills.',
+    },
+    {
+      name: 'Certificate in Business Communication',
+      description:
+        'Enhance professional communication skills through effective writing, presentations, business correspondence, and workplace interactions. This certificate improves confidence in corporate communication.',
+    },
+    {
+      name: 'Certificate in Educational Leadership & Management',
+      description:
+        'Develop foundational leadership and management skills for educational institutions through planning, administration, team coordination, and decision-making. This certificate prepares learners for educational management roles.',
+    },
   ],
 };
 
@@ -716,7 +863,12 @@ export const news = [
 export const galleryCategories = ['All', 'Labs', 'Events', 'Campus'];
 
 export const galleryItems = [
-  { id: 1, category: 'Labs', caption: 'Chemistry Research Laboratory', src: null },
+  {
+    id: 1,
+    category: 'Labs',
+    caption: 'Chemistry Research Laboratory',
+    src: '/campus gallary/lab/Chemistry Research Laboratory.jpeg',
+  },
   { id: 2, category: 'Campus', caption: 'Main Academic Block', src: null },
   {
     id: 3,
@@ -724,11 +876,21 @@ export const galleryItems = [
     caption: 'Annual Science Exhibition',
     src: '/campus gallary/events/event 1.jpeg',
   },
-  { id: 4, category: 'Labs', caption: 'Computer Science Lab', src: null },
-  { id: 5, category: 'Campus', caption: 'Central Library', src: null },
+  {
+    id: 4,
+    category: 'Labs',
+    caption: 'Computer Science Lab',
+    src: '/campus gallary/lab/Computer Science Lab.jpeg',
+  },
+  { id: 5, category: 'Campus', caption: 'Central Library', src: '/campus gallary/library/Central Library.jpeg' },
   { id: 6, category: 'Events', caption: 'Convocation Ceremony', src: null },
   { id: 7, category: 'Campus', caption: 'Student Lounge & Cafeteria', src: null },
-  { id: 8, category: 'Labs', caption: 'Analytical Instrumentation Suite', src: null },
+  {
+    id: 8,
+    category: 'Labs',
+    caption: 'Analytical Instrumentation Suite',
+    src: '/campus gallary/lab/Analytical Instrumentation Suite.jpeg',
+  },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -738,7 +900,6 @@ export const footerDepartments = [
   { label: 'Department of Chemistry', href: '/academic/chemistry' },
   { label: 'Department of Computer Science', href: '/academic/computer-science' },
   { label: 'Department of English', href: '/academic/english' },
-  { label: 'Faculty of Arts and Social Sciences', href: '/academic/arts-and-social-sciences' },
   { label: 'Six-Month Diploma Programs', href: '/admissions/diploma-programs' },
   { label: 'Three-Month Certificate Courses', href: '/admissions/certificate-courses' },
   { label: 'Our Faculty', href: '/academic/faculty' },

@@ -3,6 +3,8 @@ import Contact from './pages/Contact';
 import InnerPage from './pages/InnerPage';
 import Academic from './pages/Academic';
 import ShortCoursesPage from './pages/ShortCoursesPage';
+import DiplomaProgramsPage from './pages/DiplomaProgramsPage';
+import CertificateCoursesPage from './pages/CertificateCoursesPage';
 import ChairpersonMessagePage from './pages/ChairpersonMessagePage';
 import VisionMissionPage from './pages/VisionMissionPage';
 import FacultyPage from './pages/FacultyPage';
@@ -11,6 +13,7 @@ import ChemistryDepartment from './pages/departments/ChemistryDepartment';
 import ComputerScienceDepartment from './pages/departments/ComputerScienceDepartment';
 import EnglishDepartment from './pages/departments/EnglishDepartment';
 import { flattenNavigation } from './data/navUtils';
+import { officeContent, officeContactEmails } from './data/officeContent';
 
 /**
  * Routes are derived from the navigation config so that adding a nav item in
@@ -26,6 +29,8 @@ const CUSTOM_PAGES = {
   '/contact': Contact,
   '/academic': Academic,
   '/academic/short-courses': ShortCoursesPage,
+  '/admissions/diploma-programs': DiplomaProgramsPage,
+  '/admissions/certificate-courses': CertificateCoursesPage,
   '/discover/chairpersons-message': ChairpersonMessagePage,
   '/discover/vision-mission': VisionMissionPage,
   '/academic/chemistry': ChemistryDepartment,
@@ -60,10 +65,10 @@ const PAGE_INTROS = {
 /** Every unique href in the navigation tree, plus the top-level Academic hub. */
 const navHrefs = [...new Set(flattenNavigation().map((entry) => entry.href))];
 
-export const routes = [
-  ...navHrefs.map((path) => ({
-    path,
-    Component: CUSTOM_PAGES[path] ?? InnerPage,
-    intro: PAGE_INTROS[path],
-  })),
-];
+export const routes = navHrefs.map((path) => ({
+  path,
+  Component: CUSTOM_PAGES[path] ?? InnerPage,
+  intro: PAGE_INTROS[path],
+  body: officeContent[path],
+  contactEmail: officeContactEmails[path],
+}));

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { facultyMembers } from '../data/site';
+import { departmentFaculty } from '../data/site';
+import { navEntryFor } from '../data/navUtils';
 import { ArrowRight } from './Icons';
 import Reveal from './Reveal';
 
@@ -68,29 +69,39 @@ function FacultyCard({ member, delay }) {
 }
 
 /** The department-by-department faculty listing, shared by the homepage
- *  teaser section below and the dedicated Faculty page. */
+ *  teaser section below and the dedicated Faculty page. Reads every
+ *  department's roster from `departmentFaculty` (Chemistry, Computer
+ *  Science, English) rather than a single-department subset, and resolves
+ *  each department's display name from the nav config so it never drifts
+ *  out of sync with the department pages themselves. */
 export function FacultyDirectory() {
   return (
     <>
-      {facultyMembers.map((department) => (
-        <div key={department.department} className="mt-12 first:mt-0">
-          <Reveal className="mb-6 flex items-center gap-4">
-            <h3 className="font-display text-lg font-bold text-spist-green">
-              {department.department}
-            </h3>
-            <span className="h-px flex-1 bg-spist-line" aria-hidden="true" />
-            <span className="text-[12.5px] font-medium text-spist-muted">
-              {department.members.length} members
-            </span>
-          </Reveal>
+      {Object.entries(departmentFaculty).map(([slug, members]) => {
+        if (members.length === 0) return null;
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {department.members.map((member, index) => (
-              <FacultyCard key={member.name} member={member} delay={(index % 3) * 110} />
-            ))}
+        const departmentName = navEntryFor(`/academic/${slug}`)?.label ?? slug;
+
+        return (
+          <div key={slug} className="mt-12 first:mt-0">
+            <Reveal className="mb-6 flex items-center gap-4">
+              <h3 className="font-display text-lg font-bold text-spist-green">
+                {departmentName}
+              </h3>
+              <span className="h-px flex-1 bg-spist-line" aria-hidden="true" />
+              <span className="text-[12.5px] font-medium text-spist-muted">
+                {members.length} members
+              </span>
+            </Reveal>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {members.map((member, index) => (
+                <FacultyCard key={member.name} member={member} delay={(index % 3) * 110} />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }

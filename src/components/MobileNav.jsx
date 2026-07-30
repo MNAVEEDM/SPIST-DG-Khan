@@ -4,12 +4,103 @@ import { navigation, institution } from '../data/site';
 import { ChevronDown, Close, Mail, Phone, User } from './Icons';
 import Logo from './Logo';
 
+/** Tailwind tiers by nesting depth — reused for depth 2+ so any extra nesting still reads fine. */
+const TIERS = [
+  {
+    leaf: 'block border-l-4 px-5 py-3.5 text-[15px] font-semibold transition-colors',
+    leafActive: 'border-spist-maroon bg-spist-accent-soft text-spist-green',
+    leafInactive: 'border-transparent text-spist-charcoal hover:bg-spist-accent-soft',
+    toggle:
+      'flex w-full items-center justify-between gap-3 border-l-4 border-transparent px-5 py-3.5 text-left text-[15px] font-semibold text-spist-charcoal transition-colors hover:bg-spist-accent-soft',
+    childWrapper: 'bg-spist-accent-soft/50 py-1',
+    chevron: undefined,
+  },
+  {
+    leaf: 'block border-l-4 py-2.5 pl-8 pr-5 text-[14px] transition-colors',
+    leafActive: 'border-spist-maroon font-semibold text-spist-green',
+    leafInactive: 'border-transparent text-spist-muted hover:text-spist-green',
+    toggle:
+      'flex w-full items-center justify-between gap-3 border-l-4 border-transparent py-2.5 pl-8 pr-5 text-left text-[14px] font-medium text-spist-charcoal transition-colors hover:text-spist-green',
+    childWrapper: 'border-l-2 border-spist-accent/40 py-1 pl-2 ml-8',
+    chevron: '14',
+  },
+  {
+    leaf: 'block py-2 pl-3 pr-5 text-[13.5px] transition-colors',
+    leafActive: 'font-semibold text-spist-green',
+    leafInactive: 'text-spist-muted hover:text-spist-green',
+    toggle:
+      'flex w-full items-center justify-between gap-3 py-2 pl-3 pr-5 text-left text-[13.5px] font-medium text-spist-charcoal transition-colors hover:text-spist-green',
+    childWrapper: 'border-l-2 border-spist-accent/40 py-1 pl-2 ml-6',
+    chevron: '13',
+  },
+];
+
+/**
+ * One row of the mobile accordion — a plain link, or, when the item has its
+ * own children, a tap-to-expand toggle. Recurses so any nesting depth beyond
+ * level 2 (e.g. Office » Administration Offices » Registrar) works the same way.
+ */
+function AccordionRow({ item, depth, resetKey }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = Array.isArray(item.children) && item.children.length > 0;
+  const tier = TIERS[Math.min(depth, TIERS.length - 1)];
+
+  useEffect(() => setExpanded(false), [resetKey]);
+
+  if (!hasChildren) {
+    return (
+      <NavLink
+        to={item.href}
+        className={({ isActive }) =>
+          [tier.leaf, isActive ? tier.leafActive : tier.leafInactive].join(' ')
+        }
+      >
+        {item.label}
+      </NavLink>
+    );
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setExpanded((current) => !current)}
+        aria-expanded={expanded}
+        className={tier.toggle}
+      >
+        {item.label}
+        <ChevronDown
+          width={tier.chevron}
+          height={tier.chevron}
+          className={`shrink-0 text-spist-accent transition-transform duration-200 ${
+            expanded ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      <div
+        className="grid transition-[grid-template-rows] duration-300 ease-out"
+        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <ul className={tier.childWrapper}>
+            {item.children.map((child) => (
+              <li key={child.href ?? child.label}>
+                <AccordionRow item={child} depth={depth + 1} resetKey={resetKey} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /**
  * Slide-in drawer for tablet and mobile.
  * Purely tap-driven: every level is an accordion, nothing depends on hover.
  */
 export default function MobileNav({ open, onClose }) {
-  const [expanded, setExpanded] = useState({});
   const location = useLocation();
 
   // Close the drawer on navigation.
@@ -35,8 +126,6 @@ export default function MobileNav({ open, onClose }) {
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [open, onClose]);
-
-  const toggle = (key) => setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
 
   return (
     <>
@@ -74,130 +163,11 @@ export default function MobileNav({ open, onClose }) {
 
         <nav className="flex-1 overflow-y-auto overscroll-contain py-2">
           <ul>
-            {navigation.map((item) => {
-              const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-              const key = item.label;
-
-              if (!hasChildren) {
-                return (
-                  <li key={key} className="border-b border-spist-line/70">
-                    <NavLink
-                      to={item.href}
-                      className={({ isActive }) =>
-                        [
-                          'block border-l-4 px-5 py-3.5 text-[15px] font-semibold transition-colors',
-                          isActive
-                            ? 'border-spist-maroon bg-spist-accent-soft text-spist-green'
-                            : 'border-transparent text-spist-charcoal hover:bg-spist-accent-soft',
-                        ].join(' ')
-                      }
-                    >
-                      {item.label}
-                    </NavLink>
-                  </li>
-                );
-              }
-
-              return (
-                <li key={key} className="border-b border-spist-line/70">
-                  <button
-                    type="button"
-                    onClick={() => toggle(key)}
-                    aria-expanded={!!expanded[key]}
-                    className="flex w-full items-center justify-between gap-3 border-l-4 border-transparent px-5 py-3.5 text-left text-[15px] font-semibold text-spist-charcoal transition-colors hover:bg-spist-accent-soft"
-                  >
-                    {item.label}
-                    <ChevronDown
-                      className={`shrink-0 text-spist-green transition-transform duration-200 ${
-                        expanded[key] ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-
-                  <div
-                    className="grid transition-[grid-template-rows] duration-300 ease-out"
-                    style={{ gridTemplateRows: expanded[key] ? '1fr' : '0fr' }}
-                  >
-                    <div className="overflow-hidden">
-                      <ul className="bg-spist-accent-soft/50 py-1">
-                        {item.children.map((child) => {
-                          const hasFlyout =
-                            Array.isArray(child.children) && child.children.length > 0;
-                          const subKey = `${key}::${child.label}`;
-
-                          if (!hasFlyout) {
-                            return (
-                              <li key={child.href}>
-                                <NavLink
-                                  to={child.href}
-                                  className={({ isActive }) =>
-                                    [
-                                      'block border-l-4 py-2.5 pl-8 pr-5 text-[14px] transition-colors',
-                                      isActive
-                                        ? 'border-spist-maroon font-semibold text-spist-green'
-                                        : 'border-transparent text-spist-muted hover:text-spist-green',
-                                    ].join(' ')
-                                  }
-                                >
-                                  {child.label}
-                                </NavLink>
-                              </li>
-                            );
-                          }
-
-                          return (
-                            <li key={subKey}>
-                              <button
-                                type="button"
-                                onClick={() => toggle(subKey)}
-                                aria-expanded={!!expanded[subKey]}
-                                className="flex w-full items-center justify-between gap-3 border-l-4 border-transparent py-2.5 pl-8 pr-5 text-left text-[14px] font-medium text-spist-charcoal transition-colors hover:text-spist-green"
-                              >
-                                {child.label}
-                                <ChevronDown
-                                  width="14"
-                                  height="14"
-                                  className={`shrink-0 text-spist-accent transition-transform duration-200 ${
-                                    expanded[subKey] ? 'rotate-180' : ''
-                                  }`}
-                                />
-                              </button>
-
-                              <div
-                                className="grid transition-[grid-template-rows] duration-300 ease-out"
-                                style={{ gridTemplateRows: expanded[subKey] ? '1fr' : '0fr' }}
-                              >
-                                <div className="overflow-hidden">
-                                  <ul className="border-l-2 border-spist-accent/40 py-1 pl-2 ml-8">
-                                    {child.children.map((grandchild) => (
-                                      <li key={grandchild.href}>
-                                        <NavLink
-                                          to={grandchild.href}
-                                          className={({ isActive }) =>
-                                            [
-                                              'block py-2 pl-3 pr-5 text-[13.5px] transition-colors',
-                                              isActive
-                                                ? 'font-semibold text-spist-green'
-                                                : 'text-spist-muted hover:text-spist-green',
-                                            ].join(' ')
-                                          }
-                                        >
-                                          {grandchild.label}
-                                        </NavLink>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
+            {navigation.map((item) => (
+              <li key={item.label} className="border-b border-spist-line/70">
+                <AccordionRow item={item} depth={0} resetKey={`${location.pathname}|${open}`} />
+              </li>
+            ))}
           </ul>
         </nav>
 
