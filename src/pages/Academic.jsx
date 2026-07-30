@@ -17,7 +17,7 @@ export default function Academic({ intro }) {
         trail={entry?.trail ?? ['Academic']}
         intro={
           intro ??
-          'Three faculties offering degree, associate degree, and skills-based programs across the sciences, social sciences and languages.'
+          'Two faculties offering degree and associate degree programs across the sciences and languages.'
         }
       />
 

@@ -92,7 +92,6 @@ export const navigation = [
           { label: 'Department of Computer Science', href: '/academic/computer-science' },
         ],
       },
-      { label: 'Faculty of Arts and Social Sciences', href: '/academic/arts-and-social-sciences' },
       {
         label: 'Faculty of Languages',
         children: [{ label: 'Department of English', href: '/academic/english' }],
@@ -163,7 +162,7 @@ export const heroSlides = [
  * ------------------------------------------------------------------------ */
 export const stats = [
   { id: 'years', value: 12, suffix: '+', label: 'Years of Service' }, // PLACEHOLDER
-  { id: 'faculties', value: 3, suffix: '', label: 'Faculties' },
+  { id: 'faculties', value: 2, suffix: '', label: 'Faculties' },
   { id: 'departments', value: 3, suffix: '', label: 'Departments' },
   { id: 'students', value: 1200, suffix: '+', label: 'Enrolled Students' }, // PLACEHOLDER
   { id: 'teachers', value: 45, suffix: '+', label: 'Faculty Members' }, // PLACEHOLDER
@@ -313,24 +312,6 @@ export const faculties = [
         degreeType: 'Associate Degree',
         credits: '68 Credit Hours', // PLACEHOLDER
         href: '/academic/computer-science',
-      },
-    ],
-  },
-  {
-    id: 'arts-social-sciences',
-    name: 'Faculty of Arts and Social Sciences',
-    short: 'Arts & Social Sciences',
-    blurb:
-      'Programs exploring society, human behaviour and culture — developing the critical and analytical skills that underpin public life.',
-    programs: [
-      {
-        // PLACEHOLDER — replace with the confirmed program list for this faculty
-        name: 'Programs Announced Shortly',
-        department: 'Faculty of Arts and Social Sciences',
-        duration: '—',
-        degreeType: 'Details to be announced',
-        credits: '—',
-        href: '/academic/arts-and-social-sciences',
       },
     ],
   },
@@ -738,7 +719,6 @@ export const footerDepartments = [
   { label: 'Department of Chemistry', href: '/academic/chemistry' },
   { label: 'Department of Computer Science', href: '/academic/computer-science' },
   { label: 'Department of English', href: '/academic/english' },
-  { label: 'Faculty of Arts and Social Sciences', href: '/academic/arts-and-social-sciences' },
   { label: 'Six-Month Diploma Programs', href: '/admissions/diploma-programs' },
   { label: 'Three-Month Certificate Courses', href: '/admissions/certificate-courses' },
   { label: 'Our Faculty', href: '/academic/faculty' },
