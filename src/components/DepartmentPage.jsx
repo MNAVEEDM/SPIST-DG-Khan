@@ -139,7 +139,7 @@ export default function DepartmentPage({
           </Reveal>
 
           {facultyList.length > 0 ? (
-            <div className="mt-9 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+            <div className="mt-9 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
               {facultyList.map((member, index) => (
                 <Reveal key={member.name} delay={(index % 4) * 90}>
                   <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-spist-line bg-white shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-e3">
