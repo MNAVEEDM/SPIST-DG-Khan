@@ -1,106 +1,11 @@
-import { useId, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
 import CTASection from '../components/CTASection';
+import { AccordionCourseCard } from '../components/CourseCards';
 import { certificateCourses, diplomaPrograms, shortCoursesPage } from '../data/site';
-import { Check, ChevronDown, Clock } from '../components/Icons';
+import { Check } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
-
-function CourseCard({ name, duration, accent, delay }) {
-  const isMaroon = accent === 'maroon';
-
-  return (
-    <Reveal delay={delay}>
-      <article className="group flex h-full items-start gap-4 rounded-xl border border-spist-line bg-white p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-spist-accent/60 hover:shadow-e3">
-        <span
-          className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
-            isMaroon
-              ? 'bg-spist-maroon/10 text-spist-maroon group-hover:bg-spist-maroon group-hover:text-white'
-              : 'bg-spist-green/10 text-spist-green group-hover:bg-spist-green group-hover:text-white'
-          }`}
-          aria-hidden="true"
-        >
-          <Check width="17" height="17" strokeWidth={2.5} />
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <h3 className="font-display text-[15px] font-bold leading-snug text-spist-charcoal">
-            {name}
-          </h3>
-          <span
-            className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider ${
-              isMaroon ? 'bg-spist-maroon/10 text-spist-maroon' : 'bg-spist-green/10 text-spist-green'
-            }`}
-          >
-            <Clock width="11" height="11" />
-            {duration}
-          </span>
-        </div>
-      </article>
-    </Reveal>
-  );
-}
-
-/** Diploma card that expands in place to reveal its full description. */
-function DiplomaAccordionCard({ name, description, duration, delay }) {
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
-
-  return (
-    <Reveal delay={delay}>
-      <article className="overflow-hidden rounded-xl border border-spist-line bg-white shadow-card transition-all duration-300 hover:border-spist-accent/60 hover:shadow-e3">
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          aria-expanded={open}
-          aria-controls={panelId}
-          className="flex w-full items-start gap-4 p-5 text-left"
-        >
-          <span
-            className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${
-              open ? 'bg-spist-green text-white' : 'bg-spist-green/10 text-spist-green'
-            }`}
-            aria-hidden="true"
-          >
-            <Check width="17" height="17" strokeWidth={2.5} />
-          </span>
-
-          <span className="min-w-0 flex-1">
-            <span className="block font-display text-[15px] font-bold leading-snug text-spist-charcoal">
-              {name}
-            </span>
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-spist-green/10 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-spist-green">
-              <Clock width="11" height="11" />
-              {duration}
-            </span>
-          </span>
-
-          <ChevronDown
-            width="18"
-            height="18"
-            className={`mt-1.5 shrink-0 text-spist-green transition-transform duration-200 ${
-              open ? 'rotate-180' : ''
-            }`}
-          />
-        </button>
-
-        <div
-          id={panelId}
-          aria-hidden={!open}
-          className="grid transition-[grid-template-rows] duration-300 ease-out"
-          style={{ gridTemplateRows: open ? '1fr' : '0fr' }}
-        >
-          <div className="overflow-hidden">
-            <p className="border-t border-spist-line px-5 pb-5 pt-4 text-[13.5px] leading-relaxed text-spist-muted">
-              {description}
-            </p>
-          </div>
-        </div>
-      </article>
-    </Reveal>
-  );
-}
 
 function IntroSection() {
   const { heading, paragraphs } = shortCoursesPage.intro;
@@ -240,9 +145,8 @@ function CareerOpportunitiesSection() {
   );
 }
 
-function CourseSection({ group, accent, variant }) {
+function CourseSection({ group, accent }) {
   const isMaroon = accent === 'maroon';
-  const isDiploma = variant === 'diploma';
 
   return (
     <section className={isMaroon ? 'bg-spist-accent-soft/45 py-14 sm:py-16 lg:py-20' : 'bg-white py-14 sm:py-16 lg:py-20'}>
@@ -277,25 +181,16 @@ function CourseSection({ group, accent, variant }) {
         )}
 
         <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {isDiploma
-            ? group.items.map((item, index) => (
-                <DiplomaAccordionCard
-                  key={item.name}
-                  name={item.name}
-                  description={item.description}
-                  duration={group.duration}
-                  delay={(index % 6) * 70}
-                />
-              ))
-            : group.items.map((name, index) => (
-                <CourseCard
-                  key={name}
-                  name={name}
-                  duration={group.duration}
-                  accent={accent}
-                  delay={(index % 6) * 70}
-                />
-              ))}
+          {group.items.map((item, index) => (
+            <AccordionCourseCard
+              key={item.name}
+              name={item.name}
+              description={item.description}
+              duration={group.duration}
+              accent={accent}
+              delay={(index % 6) * 70}
+            />
+          ))}
         </div>
 
         {group.footnote && (
@@ -326,8 +221,8 @@ export default function ShortCoursesPage({ intro }) {
       <IntroSection />
       <WhyChooseSection />
 
-      <CourseSection group={diplomaPrograms} accent="green" variant="diploma" />
-      <CourseSection group={certificateCourses} accent="maroon" variant="certificate" />
+      <CourseSection group={diplomaPrograms} accent="green" />
+      <CourseSection group={certificateCourses} accent="maroon" />
 
       <PracticalLearningSection />
       <CareerOpportunitiesSection />
