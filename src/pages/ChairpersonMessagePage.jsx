@@ -3,59 +3,11 @@ import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
 import { Quote, User } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
-import { chairperson, chairpersonFullMessage } from '../data/site';
-
-/** Renders one block of the chairperson's full message content stream. */
-function MessageBlock({ block }) {
-  switch (block.type) {
-    case 'heading':
-      return (
-        <h2 className="mt-9 font-display text-xl font-bold text-spist-charcoal sm:text-2xl">
-          {block.text}
-        </h2>
-      );
-
-    case 'orderedList':
-      return (
-        <ol className="mt-4 space-y-3">
-          {block.items.map((item, index) => (
-            <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.85] text-spist-muted">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-spist-green/10 text-[12px] font-bold text-spist-green">
-                {index + 1}
-              </span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ol>
-      );
-
-    case 'unorderedList':
-      return (
-        <ul className="mt-4 space-y-3">
-          {block.items.map((item) => (
-            <li key={item} className="flex items-start gap-3 text-[15px] leading-[1.85] text-spist-muted">
-              <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-spist-accent" aria-hidden="true" />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      );
-
-    case 'paragraph':
-    default:
-      return (
-        <p className="mt-4 text-[15px] leading-[1.85] text-spist-muted">
-          {block.lead && <strong className="font-semibold text-spist-charcoal">{block.lead} </strong>}
-          {block.text}
-        </p>
-      );
-  }
-}
+import { chairperson } from '../data/site';
 
 export default function ChairpersonMessagePage() {
   const { pathname } = useLocation();
   const entry = navEntryFor(pathname);
-  const { signOff } = chairpersonFullMessage;
 
   return (
     <>
@@ -112,7 +64,7 @@ export default function ChairpersonMessagePage() {
               </span>
 
               <h2 id="chairperson-heading" className="section-title">
-                Chairperson Message
+                Chairperson's Message
               </h2>
 
               <Quote className="mt-6 text-spist-accent/50" width="34" height="34" />
@@ -132,42 +84,6 @@ export default function ChairpersonMessagePage() {
               </p>
             </Reveal>
           </div>
-        </div>
-      </section>
-
-      {/* ---------- Full message ---------- */}
-      <section className="bg-spist-accent-soft/45 py-14 sm:py-16 lg:py-20">
-        <div className="container-spist">
-          <Reveal className="mx-auto max-w-3xl text-center">
-            <span className="eyebrow justify-center">
-              <span className="h-px w-7 bg-spist-maroon" />
-              Full Message
-              <span className="h-px w-7 bg-spist-maroon" />
-            </span>
-            <h2 className="section-title">In Her Own Words</h2>
-          </Reveal>
-
-          <Reveal delay={100} className="mx-auto mt-10 max-w-3xl">
-            <div className="rounded-xl border border-spist-line bg-white p-7 text-left shadow-card sm:p-10">
-              {chairpersonFullMessage.blocks.map((block, index) => (
-                <MessageBlock key={index} block={block} />
-              ))}
-
-              <div className="mt-10 border-t border-spist-line pt-6">
-                <p className="text-[15px] leading-[1.85] text-spist-muted">{signOff.valediction}</p>
-                <p className="mt-3 font-display text-base font-bold text-spist-charcoal">
-                  {signOff.name}
-                </p>
-                <p className="text-[13.5px] text-spist-muted">{signOff.role}</p>
-                <p className="text-[13.5px] text-spist-muted">
-                  {signOff.institutionLine}, {signOff.city}
-                </p>
-                <p className="mt-2 text-[12px] font-semibold uppercase tracking-wide text-spist-green">
-                  {signOff.recognition}
-                </p>
-              </div>
-            </div>
-          </Reveal>
         </div>
       </section>
     </>

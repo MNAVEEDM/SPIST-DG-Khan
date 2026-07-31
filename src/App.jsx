@@ -22,21 +22,25 @@ export default function App() {
 
       <main id="main-content" className="flex-1">
         <Routes>
-          {routes.map(({ path, Component, intro, title, trail, body, contactEmail }) => (
-            <Route
-              key={path}
-              path={path}
-              element={
-                <Component
-                  intro={intro}
-                  title={title}
-                  trail={trail}
-                  body={body}
-                  contactEmail={contactEmail}
-                />
-              }
-            />
-          ))}
+          {routes.map(
+            ({ path, Component, intro, title, trail, body, contactEmail, person, officeGroup }) => (
+              <Route
+                key={path}
+                path={path}
+                element={
+                  <Component
+                    intro={intro}
+                    title={title}
+                    trail={trail}
+                    body={body}
+                    contactEmail={contactEmail}
+                    person={person}
+                    officeGroup={officeGroup}
+                  />
+                }
+              />
+            ),
+          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

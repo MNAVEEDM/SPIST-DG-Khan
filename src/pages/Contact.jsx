@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
-import { Clock, Facebook, Mail, MapPin, Phone, WhatsApp } from '../components/Icons';
+import { Clock, Mail, MapPin, Phone, WhatsApp } from '../components/Icons';
 import { institution } from '../data/site';
 
 const CARDS = [
@@ -140,18 +140,25 @@ export default function Contact() {
             {/* ---------- Map + socials ---------- */}
             <Reveal delay={140} className="lg:col-span-5">
               <div className="overflow-hidden rounded-xl border border-spist-line shadow-card">
-                <div
-                  className="brand-pattern flex h-72 flex-col items-center justify-center bg-gradient-to-br from-spist-green-deep via-spist-green to-spist-green-dark text-center"
-                  role="img"
-                  aria-label="Map of the SPIST campus location — embed to be added"
-                >
-                  <MapPin width="34" height="34" className="text-white/45" strokeWidth={1.4} />
-                  <p className="mt-3 px-6 font-display text-base font-semibold text-white">
-                    {institution.shortName}, {institution.city}
-                  </p>
-                  <p className="mt-1 px-6 text-[12px] uppercase tracking-[0.14em] text-white/55">
-                    Google Maps embed to be added
-                  </p>
+                <iframe
+                  title={`Map showing the ${institution.shortName} campus location`}
+                  src={institution.location.mapEmbedUrl}
+                  className="h-72 w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+
+                <div className="border-t border-spist-line p-6">
+                  <a
+                    href={institution.location.directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-md border-2 border-spist-green px-4 py-2 text-[13.5px] font-semibold text-spist-green transition-colors hover:bg-spist-green hover:text-white"
+                  >
+                    <MapPin width="15" height="15" />
+                    Get Directions
+                  </a>
                 </div>
 
                 <div className="border-t border-spist-line p-6">
@@ -162,19 +169,10 @@ export default function Contact() {
 
                   <div className="mt-4 flex items-center gap-3">
                     <a
-                      href={institution.social.facebook}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md bg-spist-green px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-spist-green-dark"
-                    >
-                      <Facebook width="15" height="15" />
-                      Facebook
-                    </a>
-                    <a
                       href={institution.social.whatsapp}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md border-2 border-spist-green px-4 py-2 text-[13.5px] font-semibold text-spist-green transition-colors hover:bg-spist-green hover:text-white"
+                      className="inline-flex items-center gap-2 rounded-md bg-spist-green px-4 py-2.5 text-[13.5px] font-semibold text-white transition-colors hover:bg-spist-green-dark"
                     >
                       <WhatsApp width="15" height="15" />
                       WhatsApp

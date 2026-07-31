@@ -207,3 +207,37 @@ export const Eye = (props) => (
     <circle cx="12" cy="12" r="3" />
   </svg>
 );
+
+export const Trophy = (props) => (
+  <svg {...base} width="24" height="24" {...props}>
+    <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z" />
+    <path d="M7 5H4a1 1 0 0 0-1 1c0 2.5 1.5 4.5 4 5M17 5h3a1 1 0 0 1 1 1c0 2.5-1.5 4.5-4 5" />
+  </svg>
+);
+
+export const Award = (props) => (
+  <svg {...base} width="24" height="24" {...props}>
+    <circle cx="12" cy="8" r="6" />
+    <path d="m9 13.5-1.5 7L12 18l4.5 2.5-1.5-7" />
+  </svg>
+);
+
+export const Heart = (props) => (
+  <svg {...base} width="24" height="24" {...props}>
+    <path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4 5.5 5.5 0 0 0-9.8 3.4c0 3.4 3.4 6.2 8.6 10.8l1.2 1.1 1.2-1.1c5.2-4.6 8.6-7.4 8.6-10.8z" />
+  </svg>
+);
+
+export const MessageCircle = (props) => (
+  <svg {...base} width="24" height="24" {...props}>
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+export const Users = (props) => (
+  <svg {...base} width="24" height="24" {...props}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);

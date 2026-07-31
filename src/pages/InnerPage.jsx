@@ -2,6 +2,7 @@ import { useLocation } from 'react-router-dom';
 import PageBanner from '../components/PageBanner';
 import PageSidebar from '../components/PageSidebar';
 import Reveal from '../components/Reveal';
+import StaffCard from '../components/StaffCard';
 import { Check } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
 import { institution } from '../data/site';
@@ -51,9 +52,11 @@ function OfficeBody({ title, body }) {
  * Generic template for every inner page. Pages with real institutional copy
  * supply `body` (see `src/data/officeContent.js`) and it renders in place of
  * the placeholder; pages awaiting copy fall back to the placeholder note
- * below. Bespoke layouts can still pass `children` directly.
+ * below. Bespoke layouts can still pass `children` directly. Pages with a
+ * named office-holder (see `src/data/officePersons.js`) get a compact staff
+ * card above the main content.
  */
-export default function InnerPage({ title, trail, intro, body, contactEmail, children }) {
+export default function InnerPage({ title, trail, intro, body, contactEmail, person, children }) {
   const { pathname } = useLocation();
   const entry = navEntryFor(pathname);
 
@@ -64,7 +67,15 @@ export default function InnerPage({ title, trail, intro, body, contactEmail, chi
     <>
       <PageBanner title={resolvedTitle} trail={resolvedTrail} intro={intro} />
 
-      <section className="bg-white py-14 sm:py-16 lg:py-20">
+      {person && (
+        <section className="bg-white pb-4 pt-14 sm:pt-16 lg:pt-20">
+          <div className="container-spist">
+            <StaffCard person={person} />
+          </div>
+        </section>
+      )}
+
+      <section className={`bg-white py-14 sm:py-16 lg:py-20 ${person ? 'border-t border-spist-line' : ''}`}>
         <div className="container-spist">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
             <Reveal className="lg:col-span-8">
