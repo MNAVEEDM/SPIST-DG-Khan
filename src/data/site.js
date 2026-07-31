@@ -805,7 +805,7 @@ export const galleryItems = [
     id: 3,
     category: 'Events',
     caption: 'Annual Science Exhibition',
-    src: '/campus gallary/events/event 1.jpeg',
+    src: '/campus gallary/events/Annual Science Exhibition.jpeg',
   },
   {
     id: 4,
@@ -819,7 +819,12 @@ export const galleryItems = [
     caption: 'Central Library',
     src: '/campus gallary/campus/Central Library.jpeg',
   },
-  { id: 6, category: 'Events', caption: 'Convocation Ceremony', src: null },
+  {
+    id: 6,
+    category: 'Events',
+    caption: 'Convocation Ceremony',
+    src: '/campus gallary/events/Convocation Ceremony.jpeg',
+  },
   {
     id: 7,
     category: 'Campus',
