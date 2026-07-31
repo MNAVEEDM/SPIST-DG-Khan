@@ -18,7 +18,14 @@ export const institution = {
   tagline: 'Wa la ghaliba illallah — There is no victor but Allah',
   established: 2014, // PLACEHOLDER — confirm the founding year
   logo: '/logo/spist_logo.png',
-  address: 'South Punjab Institute of Science & Technology, Dera Ghazi Khan, Punjab, Pakistan',
+  address:
+    'South Punjab Institute of Science & Technology, Jampur Road, Dera Ghazi Khan, Punjab, Pakistan',
+  location: {
+    lat: 30.0289892,
+    lng: 70.641058,
+    mapEmbedUrl: 'https://www.google.com/maps?q=30.0289892,70.641058&z=17&output=embed',
+    directionsUrl: 'https://www.google.com/maps/dir/?api=1&destination=30.0289892,70.641058',
+  },
   phones: ['0330-1624002', '064-2406370'],
   email: 'spistdgkhan@gmail.com',
   social: {
@@ -52,96 +59,16 @@ export const navigation = [
       {
         label: 'Office',
         children: [
-          {
-            label: 'Rector',
-            children: [
-              { label: 'Rector Office', href: '/discover/offices/rector-office/rector-office' },
-              { label: 'PS to Rector', href: '/discover/offices/rector-office/ps-to-rector' },
-            ],
-          },
-          {
-            label: 'Administration Offices',
-            children: [
-              { label: 'Registrar', href: '/discover/offices/administration-offices/registrar' },
-              {
-                label: 'Admin Office',
-                href: '/discover/offices/administration-offices/admin-office',
-              },
-              {
-                label: 'Registration Branch',
-                href: '/discover/offices/administration-offices/registration-branch',
-              },
-            ],
-          },
-          {
-            label: 'Examination Department',
-            children: [
-              {
-                label: 'Controller Examination',
-                href: '/discover/offices/examination-department/controller-examination',
-              },
-              {
-                label: 'Asst Controller of Examination',
-                href: '/discover/offices/examination-department/asst-controller-of-examination',
-              },
-              {
-                label: 'Form Section',
-                href: '/discover/offices/examination-department/form-section',
-              },
-              {
-                label: 'Conduct Branch',
-                href: '/discover/offices/examination-department/conduct-branch',
-              },
-              {
-                label: 'Results Section',
-                href: '/discover/offices/examination-department/results-section',
-              },
-            ],
-          },
-          {
-            label: 'Finance Office',
-            children: [
-              {
-                label: 'Treasurer Office',
-                href: '/discover/offices/finance-office/treasurer-office',
-              },
-              { label: 'Account Office', href: '/discover/offices/finance-office/account-office' },
-              { label: 'Staff Office', href: '/discover/offices/finance-office/staff-office' },
-            ],
-          },
-          {
-            label: 'DSA',
-            children: [
-              {
-                label: 'Director Student Office',
-                href: '/discover/offices/dsa/director-student-office',
-              },
-            ],
-          },
+          { label: 'Rector', href: '/discover/offices/rector-office' },
+          { label: 'Administration Office', href: '/discover/offices/administration-offices' },
+          { label: 'Finance Office', href: '/discover/offices/finance-office' },
+          { label: 'Examination Department', href: '/discover/offices/examination-department' },
+          { label: 'DSA', href: '/discover/offices/dsa' },
           { label: 'ORIC Office', href: '/oric' },
-          {
-            label: 'QEC',
-            children: [
-              { label: 'Director Office', href: '/discover/offices/qec/director-office' },
-              { label: 'Deputy Director', href: '/discover/offices/qec/deputy-director' },
-              { label: 'Our Staff Office', href: '/discover/offices/qec/our-staff-office' },
-            ],
-          },
-          {
-            label: 'Central Library',
-            children: [
-              { label: 'Librarian', href: '/discover/offices/central-library/librarian' },
-            ],
-          },
-          {
-            label: 'Security Office',
-            children: [
-              {
-                label: 'Chief Security Office',
-                href: '/discover/offices/security-office/chief-security-office',
-              },
-            ],
-          },
+          { label: 'QEC', href: '/discover/offices/qec' },
+          { label: 'Central Library', href: '/discover/offices/central-library' },
+          { label: 'Security Office', href: '/discover/offices/security-office' },
+          // Standalone offices with no sub-items — unaffected by the landing-page pattern above.
           { label: 'Health Care Centre', href: '/discover/offices/health-care-centre' },
           { label: 'Web Development', href: '/discover/offices/web-development' },
           { label: 'Software Cell', href: '/discover/offices/software-cell' },
@@ -275,7 +202,7 @@ export const stats = [
 export const chairperson = {
   name: 'Dr. Mina Ehsan Leghari',
   role: 'Chairperson',
-  institution: 'South Punjab Institute of Science and Technology (SPIST), Dera Ghazi Khan',
+  
   photo: null, // PLACEHOLDER — '/images/chairperson.jpg'
   paragraphs: [
     'Welcome to the South Punjab Institute of Science and Technology (SPIST), Dera Ghazi Khan.',
@@ -358,8 +285,7 @@ export const chairpersonFullMessage = {
     valediction: 'With best wishes,',
     name: 'Dr. Mina Ehsan Leghari Sahiba',
     role: 'Chairperson',
-    institutionLine: 'South Punjab Institute of Science and Technology - SPIST',
-    city: 'Dera Ghazi Khan',
+    
     recognition: 'Recognized by HEC & Government of Punjab',
   },
 };
@@ -869,7 +795,12 @@ export const galleryItems = [
     caption: 'Chemistry Research Laboratory',
     src: '/campus gallary/lab/Chemistry Research Laboratory.jpeg',
   },
-  { id: 2, category: 'Campus', caption: 'Main Academic Block', src: null },
+  {
+    id: 2,
+    category: 'Campus',
+    caption: 'Main Academic Block',
+    src: '/campus gallary/campus/Main Academic Block.jpeg',
+  },
   {
     id: 3,
     category: 'Events',
@@ -882,9 +813,19 @@ export const galleryItems = [
     caption: 'Computer Science Lab',
     src: '/campus gallary/lab/Computer Science Lab.jpeg',
   },
-  { id: 5, category: 'Campus', caption: 'Central Library', src: '/campus gallary/library/Central Library.jpeg' },
+  {
+    id: 5,
+    category: 'Campus',
+    caption: 'Central Library',
+    src: '/campus gallary/campus/Central Library.jpeg',
+  },
   { id: 6, category: 'Events', caption: 'Convocation Ceremony', src: null },
-  { id: 7, category: 'Campus', caption: 'Student Lounge & Cafeteria', src: null },
+  {
+    id: 7,
+    category: 'Campus',
+    caption: 'Student Lounge & Cafeteria',
+    src: '/campus gallary/campus/Student Lounge & Cafeteria.jpeg',
+  },
   {
     id: 8,
     category: 'Labs',

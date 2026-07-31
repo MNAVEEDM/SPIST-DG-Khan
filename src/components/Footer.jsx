@@ -159,18 +159,15 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Map placeholder — swap for an <iframe> embed when available */}
+          {/* Campus map */}
           <div className="mt-5 overflow-hidden rounded-lg border border-white/12">
-            <div
-              className="brand-pattern flex h-28 items-center justify-center bg-spist-green/40"
-              role="img"
-              aria-label="Map of the SPIST campus location — embed to be added"
-            >
-              <span className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider text-white/55">
-                <MapPin width="14" height="14" />
-                Campus Map
-              </span>
-            </div>
+            <iframe
+              title={`Map showing the ${institution.shortName} campus location`}
+              src={institution.location.mapEmbedUrl}
+              className="h-28 w-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
         </div>
       </div>
