@@ -1,0 +1,119 @@
+/* ============================================================================
+ * API client for the online admission signup/login/application flow.
+ *
+ * Talks to the Express + MongoDB backend in /server. Only a JWT session
+ * token is kept in the browser (localStorage) — never the password, and
+ * never application data beyond what's needed to render the current page,
+ * since the source of truth is now the database, not the browser.
+ * ==========================================================================*/
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000';
+const TOKEN_KEY = 'spist_admission_token_v1';
+
+function getToken() {
+  try {
+    return window.localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setToken(token) {
+  try {
+    window.localStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    // Storage unavailable (private browsing, quota, etc). The session just
+    // won't survive a refresh — the rest of the flow still works.
+  }
+}
+
+function clearToken() {
+  try {
+    window.localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* noop */
+  }
+}
+
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error('Could not reach the admissions server. Please check your connection and try again.');
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'Something went wrong. Please try again.');
+  }
+
+  return data;
+}
+
+/* ---------------------------------------------------------------------------
+ * Auth
+ * ------------------------------------------------------------------------ */
+export async function createAccount({ fullName, email, password }) {
+  const data = await apiFetch('/api/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify({ fullName, email, password }),
+  });
+  setToken(data.token);
+  return data.user;
+}
+
+export async function verifyLogin(email, password) {
+  const data = await apiFetch('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+  setToken(data.token);
+  return data.user;
+}
+
+/** Resumes a session from a stored token, if there is one and it's still valid. */
+export async function getSession() {
+  if (!getToken()) return null;
+  try {
+    const data = await apiFetch('/api/auth/me');
+    return data.user;
+  } catch {
+    clearToken();
+    return null;
+  }
+}
+
+export function clearSession() {
+  clearToken();
+}
+
+/* ---------------------------------------------------------------------------
+ * Application — one per logged-in account
+ * ------------------------------------------------------------------------ */
+export async function getApplication() {
+  const data = await apiFetch('/api/applications/me');
+  return data.application;
+}
+
+export async function saveApplication(formValues) {
+  const data = await apiFetch('/api/applications/me', {
+    method: 'POST',
+    body: JSON.stringify(formValues),
+  });
+  return data.application;
+}
+
+export async function clearApplication() {
+  await apiFetch('/api/applications/me', { method: 'DELETE' });
+}

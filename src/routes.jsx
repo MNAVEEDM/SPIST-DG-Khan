@@ -5,6 +5,7 @@ import OfficeGroupPage from './pages/OfficeGroupPage';
 import Academic from './pages/Academic';
 import ShortCoursesPage from './pages/ShortCoursesPage';
 import DiplomaProgramsPage from './pages/DiplomaProgramsPage';
+import OnlineAdmissionPage from './pages/OnlineAdmissionPage';
 import CertificateCoursesPage from './pages/CertificateCoursesPage';
 import ChairpersonMessagePage from './pages/ChairpersonMessagePage';
 import VisionMissionPage from './pages/VisionMissionPage';
@@ -33,6 +34,7 @@ const CUSTOM_PAGES = {
   '/contact': Contact,
   '/academic': Academic,
   '/academic/short-courses': ShortCoursesPage,
+  '/admissions/online': OnlineAdmissionPage,
   '/admissions/diploma-programs': DiplomaProgramsPage,
   '/admissions/certificate-courses': CertificateCoursesPage,
   '/discover/chairpersons-message': ChairpersonMessagePage,
@@ -50,7 +52,6 @@ const CUSTOM_PAGES = {
 const PAGE_INTROS = {
   '/discover/overview':
     'An introduction to the South Punjab Institute of Science & Technology — our history, faculties and campus in Dera Ghazi Khan.',
-  '/admissions/online': 'Apply online for degree, diploma and certificate programs at SPIST.',
   '/admissions/fee-structure':
     'Semester-wise fee details for all degree, diploma and certificate programs.',
   '/oric':

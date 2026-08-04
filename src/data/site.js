@@ -793,13 +793,13 @@ export const galleryItems = [
     id: 1,
     category: 'Labs',
     caption: 'Chemistry Research Laboratory',
-    src: '/campus gallary/lab/Chemistry Research Laboratory.jpeg',
+    src: 'public/campus gallary/lab/chem lab.jpg',
   },
   {
     id: 2,
     category: 'Campus',
     caption: 'Main Academic Block',
-    src: '/campus gallary/campus/Main Academic Block.jpeg',
+    src: 'public/campus gallary/campus/campus.jpg',
   },
   {
     id: 3,
@@ -829,7 +829,7 @@ export const galleryItems = [
     id: 7,
     category: 'Campus',
     caption: 'Student Lounge & Cafeteria',
-    src: '/campus gallary/campus/Student Lounge & Cafeteria.jpeg',
+    src: 'public/campus gallary/campus/cafeteria.jpg',
   },
   {
     id: 8,
