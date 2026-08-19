@@ -16,7 +16,8 @@ import { supabase } from '../supabase.js';
  */
 const router = Router();
 
-const BUCKET = 'admission-docs';
+export const UPLOAD_BUCKET = 'admission-docs';
+const BUCKET = UPLOAD_BUCKET;
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 /** The named document slots the form offers. `other` may repeat, the rest can't. */

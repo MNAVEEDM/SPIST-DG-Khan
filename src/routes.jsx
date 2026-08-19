@@ -6,6 +6,7 @@ import Academic from './pages/Academic';
 import ShortCoursesPage from './pages/ShortCoursesPage';
 import DiplomaProgramsPage from './pages/DiplomaProgramsPage';
 import OnlineAdmissionPage from './pages/OnlineAdmissionPage';
+import ApplicationStatusPage from './pages/ApplicationStatusPage';
 import CertificateCoursesPage from './pages/CertificateCoursesPage';
 import ChairpersonMessagePage from './pages/ChairpersonMessagePage';
 import VisionMissionPage from './pages/VisionMissionPage';
@@ -35,6 +36,7 @@ const CUSTOM_PAGES = {
   '/academic': Academic,
   '/academic/short-courses': ShortCoursesPage,
   '/admissions/online': OnlineAdmissionPage,
+  '/admissions/status': ApplicationStatusPage,
   '/admissions/diploma-programs': DiplomaProgramsPage,
   '/admissions/certificate-courses': CertificateCoursesPage,
   '/discover/chairpersons-message': ChairpersonMessagePage,

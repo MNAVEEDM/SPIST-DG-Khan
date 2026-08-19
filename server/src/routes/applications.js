@@ -3,7 +3,8 @@ import Application from '../models/Application.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { supabase, smsSchoolId, smsCampusId, isSmsConfigured } from '../supabase.js';
-import { DOCUMENT_SLOTS } from './uploads.js';
+import { DOCUMENT_SLOTS, UPLOAD_BUCKET } from './uploads.js';
+import { sendApplicationReceivedEmail } from '../utils/mailer.js';
 const router = Router();
 
 const REQUIRED_FIELDS = [
@@ -25,6 +26,70 @@ const REQUIRED_FIELDS = [
  * entry without a storage path never made it past the upload route, so it is
  * dropped rather than saved as a broken reference.
  */
+/* ---------------------------------------------------------------------------
+ * Public status lookup — rate limiting
+ *
+ * The status route is unauthenticated, so it is the one place someone could
+ * sit and guess reference numbers. Ten attempts per quarter hour per IP makes
+ * that pointless while staying invisible to a real applicant. In-memory on
+ * purpose: a restart clearing the counters is not worth a Redis dependency.
+ * ------------------------------------------------------------------------ */
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const RATE_LIMIT_MAX_ATTEMPTS = 10;
+const statusAttempts = new Map();
+
+/** Records an attempt for `ip`, returning false once it is over the limit. */
+function withinRateLimit(ip) {
+  const now = Date.now();
+
+  // Expired buckets are dropped on the way past, so the map cannot grow
+  // without bound on a long-running server.
+  for (const [key, bucket] of statusAttempts) {
+    if (bucket.resetAt <= now) statusAttempts.delete(key);
+  }
+
+  const bucket = statusAttempts.get(ip);
+  if (!bucket) {
+    statusAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  bucket.count += 1;
+  return bucket.count <= RATE_LIMIT_MAX_ATTEMPTS;
+}
+
+/**
+ * The review itself happens in the Smart-SMS dashboard, which updates the
+ * Supabase row — MongoDB has no status column of its own. A missing row or an
+ * unconfigured sync just means nobody has reviewed it yet.
+ */
+async function readSyncedReview(application) {
+  const unreviewed = { status: 'pending', publicReason: '' };
+  if (!isSmsConfigured) return unreviewed;
+
+  try {
+    // Only these two columns, ever. `admin_note` is the reviewer's private
+    // scratchpad and must not leave the dashboard, so it is never selected.
+    const { data, error } = await supabase
+      .from('admission_applications')
+      .select('status, public_reason')
+      .eq('school_id', smsSchoolId)
+      .eq('external_id', application._id.toString())
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!data) return unreviewed;
+
+    return {
+      status: data.status || 'pending',
+      publicReason: (data.public_reason ?? '').toString().trim(),
+    };
+  } catch (error) {
+    console.error('[sms] Status lookup failed:', error.message);
+    return unreviewed;
+  }
+}
+
 function sanitizeDocuments(input) {
   if (!Array.isArray(input)) return [];
 
@@ -118,7 +183,113 @@ router.post(
         console.error('[sms] Application sync threw:', error.message);
       }
     }
+    // Confirmation email, carrying the reference number that was just saved.
+    // Resubmitting mints a new one, so this reads from `application` rather
+    // than any value computed earlier. Same try/catch rule as the sync above:
+    // a mail failure must never fail the submission.
+    try {
+      // CLIENT_ORIGIN doubles as the public site address for the link below.
+      // In production it MUST be the real domain, or the email sends applicants
+      // to localhost.
+      const statusUrl = `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/admissions/status`;
+
+      await sendApplicationReceivedEmail({
+        to: application.email,
+        fullName: application.fullName,
+        referenceNumber: application.referenceNumber,
+        program: application.program,
+        submittedAt: application.createdAt,
+        statusUrl,
+      });
+    } catch (error) {
+      console.error('[mailer] Failed to send application confirmation:', error.message);
+    }
+
     res.status(201).json({ application });
+  }),
+);
+
+/**
+ * Public status check — no session required.
+ *
+ * Reference number AND matching email are both needed, so knowing (or
+ * guessing) a reference number alone reveals nothing. The reply carries only
+ * the five fields below: never the applicant's CNIC, phone, address or
+ * documents, since anyone can call this.
+ */
+router.post(
+  '/status',
+  asyncHandler(async (req, res) => {
+    if (!withinRateLimit(req.ip ?? 'unknown')) {
+      return res
+        .status(429)
+        .json({ message: 'Too many status checks. Please wait a few minutes and try again.' });
+    }
+
+    const referenceNumber = (req.body?.referenceNumber ?? '').toString().trim();
+    const email = (req.body?.email ?? '').toString().trim().toLowerCase();
+
+    if (!referenceNumber || !email) {
+      return res
+        .status(400)
+        .json({ message: 'Reference number and email address are both required.' });
+    }
+
+    // One message for every failure: a wrong email and an unknown reference
+    // number must be indistinguishable from the outside.
+    const notFound = {
+      message:
+        'We could not find an application with that reference number and email address. Please check both and try again.',
+    };
+
+    const application = await Application.findOne({ referenceNumber });
+
+    if (!application || (application.email ?? '').trim().toLowerCase() !== email) {
+      return res.status(404).json(notFound);
+    }
+
+    const review = await readSyncedReview(application);
+
+    res.json({
+      application: {
+        fullName: application.fullName,
+        referenceNumber: application.referenceNumber,
+        program: application.program,
+        status: review.status,
+        publicReason: review.publicReason,
+        submittedAt: application.createdAt,
+      },
+    });
+  }),
+);
+
+/**
+ * A signed link to the caller's own photograph, valid for a few minutes.
+ *
+ * The bucket is private, so a stored path is useless to the browser on its
+ * own. Scoped to the session owner and to the photo they uploaded — no path
+ * is accepted from the client, so this cannot be pointed at anyone else.
+ */
+router.get(
+  '/me/photo',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const application = await Application.findOne({ user: req.userId });
+
+    if (!application?.photoPath || !supabase) {
+      return res.json({ url: null });
+    }
+
+    const { data, error } = await supabase.storage
+      .from(UPLOAD_BUCKET)
+      .createSignedUrl(application.photoPath, 300);
+
+    if (error) {
+      console.error('[uploads] Signed URL failed:', error.message);
+      return res.json({ url: null });
+    }
+
+    res.json({ url: data.signedUrl });
   }),
 );
 

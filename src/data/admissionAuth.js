@@ -136,6 +136,45 @@ export async function saveApplication(formValues) {
   return data.application;
 }
 
+/**
+ * Public status check — no account needed, just the reference number and the
+ * email the application was submitted with.
+ *
+ * Deliberately not routed through apiFetch: that attaches the session token,
+ * and this endpoint must work (identically) for a signed-out visitor.
+ */
+export async function checkApplicationStatus({ referenceNumber, email }) {
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE}/api/applications/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referenceNumber, email }),
+    });
+  } catch {
+    throw new Error('Could not reach the admissions server. Please check your connection and try again.');
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'Something went wrong. Please try again.');
+  }
+
+  return data.application;
+}
+
+/**
+ * A short-lived signed link to the applicant's own uploaded photograph.
+ * Resolves to null when they never uploaded one, so callers can simply render
+ * without a photo rather than branching on an error.
+ */
+export async function getApplicationPhotoUrl() {
+  const data = await apiFetch('/api/applications/me/photo');
+  return data.url ?? null;
+}
+
 export async function clearApplication() {
   await apiFetch('/api/applications/me', { method: 'DELETE' });
 }

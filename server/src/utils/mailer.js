@@ -63,6 +63,13 @@ function layout({ heading, bodyHtml }) {
   </div>`;
 }
 
+/** Long-form date, matching how the portal shows it on screen. */
+function formatDate(value) {
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export async function sendRegistrationEmail({ to, fullName }) {
   return send({
     to,
@@ -77,6 +84,65 @@ export async function sendRegistrationEmail({ to, fullName }) {
         '<p style="margin:0 0 12px;">Your applicant account has been created successfully.</p>' +
         '<p style="margin:0;">You can now log in to the admission portal to fill out, save and review ' +
         'your application at any time.</p>',
+    }),
+  });
+}
+
+/**
+ * Confirms a submitted application.
+ *
+ * The reference number is the point of this email — it's what the applicant
+ * needs to check their status later, and resubmitting mints a new one — so it
+ * gets the same visual weight the code gets in the password reset email.
+ */
+export async function sendApplicationReceivedEmail({
+  to,
+  fullName,
+  referenceNumber,
+  program,
+  submittedAt,
+  statusUrl,
+}) {
+  const submittedOn = formatDate(submittedAt);
+
+  const detailRows =
+    `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;width:38%;">Program</td>` +
+    `<td style="padding:6px 0;font-weight:600;">${program}</td></tr>` +
+    (submittedOn
+      ? `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;">Submitted on</td>` +
+        `<td style="padding:6px 0;font-weight:600;">${submittedOn}</td></tr>`
+      : '');
+
+  return send({
+    to,
+    subject: `Application received — ${referenceNumber}`,
+    text:
+      `Assalam-o-Alaikum ${fullName},\n\n` +
+      'Your admission application has been received.\n\n' +
+      `Reference number: ${referenceNumber}\n` +
+      `Program: ${program}\n` +
+      (submittedOn ? `Submitted on: ${submittedOn}\n` : '') +
+      '\nPlease keep this reference number — you will need it, along with this email ' +
+      `address, to check the progress of your application at:\n${statusUrl}\n\n` +
+      '— SPIST Admissions',
+    html: layout({
+      heading: 'Application received',
+      bodyHtml:
+        `<p style="margin:0 0 16px;">Assalam-o-Alaikum ${fullName}, your admission application ` +
+        'has been received. Your reference number is:</p>' +
+        '<p style="margin:0 0 18px;text-align:center;">' +
+        '<span style="display:inline-block;padding:14px 24px;background:#f1f6f2;border:1px solid #cfe0d5;' +
+        'border-radius:10px;font-size:23px;font-weight:700;letter-spacing:2.5px;color:#14532d;">' +
+        `${referenceNumber}</span></p>` +
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 18px;">' +
+        `${detailRows}</table>` +
+        '<p style="margin:0 0 18px;"><strong>Please keep this reference number.</strong> You will ' +
+        'need it, together with this email address, to check the progress of your application.</p>' +
+        '<p style="margin:0;text-align:center;">' +
+        `<a href="${statusUrl}" style="display:inline-block;padding:12px 26px;background:#14532d;` +
+        'color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">' +
+        'Check application status</a></p>' +
+        `<p style="margin:14px 0 0;color:#7a8781;font-size:12.5px;text-align:center;">${statusUrl}</p>`,
     }),
   });
 }

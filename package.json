@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:api": "npm --prefix server run dev",
+    "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1"
   },
   "dependencies": {
     "react": "^19.2.0",

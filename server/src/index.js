@@ -17,7 +17,28 @@ process.on('uncaughtException', (error) => {
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173' }));
+/**
+ * CORS: pinned to CLIENT_ORIGIN in production.
+ *
+ * In development any localhost port is accepted as well, because Vite hands
+ * out whatever port happens to be free — and a mismatch surfaces in the
+ * browser as a misleading "could not reach the server", not as a CORS error.
+ */
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+const LOCALHOST_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // curl, server-to-server and same-origin requests send no Origin header.
+      if (!origin) return callback(null, true);
+      if (origin === CLIENT_ORIGIN) return callback(null, true);
+      if (!IS_PRODUCTION && LOCALHOST_ORIGIN.test(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+  }),
+);
 app.use(express.json());
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
