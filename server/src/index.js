@@ -4,6 +4,7 @@ import cors from 'cors';
 import { connectDB } from './db.js';
 import authRoutes from './routes/auth.js';
 import applicationRoutes from './routes/applications.js';
+import uploadRoutes from './routes/uploads.js';
 
 // Defense-in-depth: log anything that slips past route-level error handling
 // instead of letting Node terminate the whole server process.
@@ -22,6 +23,7 @@ app.use(express.json());
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 // Centralized error handler — catches anything thrown/rejected in a route
 // that wasn't already handled, so the API returns JSON instead of crashing.

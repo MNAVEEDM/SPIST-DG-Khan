@@ -139,3 +139,54 @@ export async function saveApplication(formValues) {
 export async function clearApplication() {
   await apiFetch('/api/applications/me', { method: 'DELETE' });
 }
+
+/* ---------------------------------------------------------------------------
+ * Uploads — applicant photo and supporting documents
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Sends one file to the admissions server, which stores it in a private
+ * bucket and returns { path, name, size, slot, label } to keep on the form.
+ *
+ * Deliberately not routed through apiFetch: that sets a JSON content type,
+ * which would break the multipart boundary. XHR rather than fetch so the form
+ * can show real upload progress on a slow connection.
+ */
+export function uploadAdmissionFile({ file, slot, label = '', onProgress }) {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    body.append('file', file);
+    body.append('slot', slot);
+    if (label) body.append('label', label);
+
+    const request = new XMLHttpRequest();
+    request.open('POST', `${API_BASE}/api/uploads`);
+
+    const token = getToken();
+    if (token) request.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    request.upload.addEventListener('progress', (event) => {
+      if (onProgress && event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+
+    request.addEventListener('load', () => {
+      let data = {};
+      try {
+        data = JSON.parse(request.responseText);
+      } catch {
+        // A proxy or crash can answer with HTML — fall through to the generic message.
+      }
+
+      if (request.status >= 200 && request.status < 300) resolve(data);
+      else reject(new Error(data.message ?? 'The file could not be uploaded. Please try again.'));
+    });
+
+    request.addEventListener('error', () =>
+      reject(new Error('Could not reach the admissions server. Please check your connection and try again.')),
+    );
+
+    request.send(body);
+  });
+}

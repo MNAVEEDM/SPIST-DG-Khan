@@ -41,6 +41,12 @@ function emptyForm(account) {
     qualification: '',
     program: '',
     declaration: false,
+    photoPath: '',
+    documents: [],
+    // View-only companions to photoPath: a local blob URL for the preview and
+    // the original filename. Neither is sent to the server.
+    photoPreview: '',
+    photoName: '',
   };
 }
 
@@ -231,9 +237,52 @@ function ConfirmationPanel({ submission, onStartNewApplication, onLogout }) {
         <SummaryRow label="Previous Qualification" value={submission.qualification} full />
       </dl>
 
+      <UploadedSummary submission={submission} />
+
       <button type="button" onClick={onStartNewApplication} className="btn-ghost mt-7">
         Submit Another Application
       </button>
+    </div>
+  );
+}
+
+/**
+ * Applications submitted before uploads existed have no photo and no
+ * documents, so everything here is read defensively and the block simply
+ * disappears when there is nothing to show.
+ */
+function UploadedSummary({ submission }) {
+  const documents = submission.documents ?? [];
+  const hasPhoto = Boolean(submission.photoPath);
+
+  if (!hasPhoto && documents.length === 0) return null;
+
+  return (
+    <div className="mt-6 border-t border-spist-line pt-6">
+      <h3 className="text-[12px] font-bold uppercase tracking-wider text-spist-muted">
+        Uploaded Files
+      </h3>
+      <ul className="mt-3 space-y-2 text-[14px]">
+        {hasPhoto && (
+          <li className="flex items-start gap-2.5">
+            <span className="mt-1 text-spist-green" aria-hidden="true">
+              <Check width="12" height="12" strokeWidth={3} />
+            </span>
+            <span className="text-spist-muted">Applicant photograph</span>
+          </li>
+        )}
+        {documents.map((doc) => (
+          <li key={doc.path} className="flex items-start gap-2.5">
+            <span className="mt-1 text-spist-green" aria-hidden="true">
+              <Check width="12" height="12" strokeWidth={3} />
+            </span>
+            <span className="text-spist-muted">
+              {doc.label || 'Document'}
+              {doc.name ? <span className="text-spist-muted/70"> · {doc.name}</span> : null}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

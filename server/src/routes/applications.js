@@ -3,6 +3,7 @@ import Application from '../models/Application.js';
 import { requireAuth } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { supabase, smsSchoolId, smsCampusId, isSmsConfigured } from '../supabase.js';
+import { DOCUMENT_SLOTS } from './uploads.js';
 const router = Router();
 
 const REQUIRED_FIELDS = [
@@ -17,6 +18,27 @@ const REQUIRED_FIELDS = [
   'qualification',
   'program',
 ];
+
+/**
+ * Documents arrive as whatever the browser posted, so only the fields the
+ * application actually stores are kept, and only for slots that exist. An
+ * entry without a storage path never made it past the upload route, so it is
+ * dropped rather than saved as a broken reference.
+ */
+function sanitizeDocuments(input) {
+  if (!Array.isArray(input)) return [];
+
+  return input
+    .filter((doc) => doc && DOCUMENT_SLOTS[doc.slot] && typeof doc.path === 'string' && doc.path.trim())
+    .slice(0, 30)
+    .map((doc) => ({
+      slot: doc.slot,
+      label: (doc.label ?? '').toString().trim().slice(0, 120),
+      path: doc.path.trim(),
+      name: (doc.name ?? '').toString().trim().slice(0, 200),
+      size: Number.isFinite(Number(doc.size)) ? Number(doc.size) : 0,
+    }));
+}
 
 router.get(
   '/me',
@@ -58,6 +80,8 @@ router.post(
         qualification: values.qualification,
         program: values.program,
         declaration: values.declaration,
+        photoPath: (values.photoPath ?? '').toString().trim(),
+        documents: sanitizeDocuments(values.documents),
         user: req.userId,
         referenceNumber,
       },
@@ -85,6 +109,8 @@ router.post(
           qualification: application.qualification,
           program: application.program,
           declaration: Boolean(application.declaration),
+          photo_url: application.photoPath || null,
+          documents: application.documents ?? [],
         }, { onConflict: 'school_id,source,external_id' });
 
         if (error) console.error('[sms] Application sync failed:', error.message);
