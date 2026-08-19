@@ -82,6 +82,28 @@ export async function verifyLogin(email, password) {
   return data.user;
 }
 
+/**
+ * Step 1 of forgot-password: asks the server to email a 6-digit code.
+ * Resolves even for unknown addresses — the server deliberately doesn't
+ * reveal whether an account exists.
+ */
+export async function requestPasswordReset(email) {
+  return apiFetch('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+/** Step 2: trades the emailed code for a new password, and logs the user in. */
+export async function resetPassword({ email, code, password }) {
+  const data = await apiFetch('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ email, code, password }),
+  });
+  setToken(data.token);
+  return data.user;
+}
+
 /** Resumes a session from a stored token, if there is one and it's still valid. */
 export async function getSession() {
   if (!getToken()) return null;
