@@ -175,3 +175,130 @@ export async function sendPasswordResetEmail({ to, fullName, code, minutesValid 
     }),
   });
 }
+
+/**
+ * Documents an admitted applicant has to produce in person. Mirrors the list
+ * on the printed admission letter (src/utils/admissionPrint.js) so the email
+ * and the letter never disagree.
+ */
+const DOCUMENTS_TO_BRING = [
+  'Original academic certificates and transcripts, with one attested photocopy of each',
+  'Original CNIC / B-Form of the applicant, with one photocopy',
+  'Original CNIC of the parent or guardian, with one photocopy',
+  'Original domicile certificate, with one photocopy',
+  'Character certificate from the institution last attended',
+  'Four recent passport-size photographs',
+];
+
+/** `<tr>` for the small details table, skipped entirely when there's no value. */
+function detailRow(label, value) {
+  if (!value) return '';
+  return (
+    `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;width:40%;">${label}</td>` +
+    `<td style="padding:6px 0;font-weight:600;">${value}</td></tr>`
+  );
+}
+
+/** The applicant-facing note the office chose to publish, if they wrote one. */
+function reasonBlock(publicReason) {
+  if (!publicReason) return '';
+  return (
+    '<div style="margin:0 0 18px;padding:14px 16px;background:#f1f6f2;border-left:4px solid #14532d;border-radius:6px;">' +
+    '<p style="margin:0 0 4px;color:#7a8781;font-size:11.5px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">' +
+    'Message from the admissions office</p>' +
+    `<p style="margin:0;">${publicReason}</p></div>`
+  );
+}
+
+/**
+ * Emails an admission decision, in one of two tones.
+ *
+ * Called by the Smart-SMS dashboard through /api/notify/decision — that app
+ * runs entirely in the browser and has no way to send mail itself.
+ *
+ * Only ever carries what the office chose to publish: `publicReason`. The
+ * reviewer's internal note lives in the dashboard and is never passed here.
+ */
+export async function sendAdmissionDecisionEmail({
+  to,
+  fullName,
+  referenceNumber,
+  program,
+  status,
+  publicReason,
+  rollNumber,
+  className,
+}) {
+  const reason = (publicReason ?? '').toString().trim();
+  const roll = (rollNumber ?? '').toString().trim();
+  const klass = (className ?? '').toString().trim();
+
+  if (status === 'approved') {
+    const placement =
+      (roll ? `Roll number: ${roll}\n` : '') + (klass ? `Class: ${klass}\n` : '');
+
+    return send({
+      to,
+      subject: `Admission approved — ${referenceNumber}`,
+      text:
+        `Assalam-o-Alaikum ${fullName},\n\n` +
+        `We are pleased to tell you that your application for ${program} has been approved.\n\n` +
+        `Reference number: ${referenceNumber}\n` +
+        placement +
+        (reason ? `\nMessage from the admissions office:\n${reason}\n` : '') +
+        '\nTo complete your enrolment, please report to the admissions office in person with:\n' +
+        DOCUMENTS_TO_BRING.map((item) => `  - ${item}`).join('\n') +
+        '\n\nYour admission is confirmed once these have been verified and the applicable dues ' +
+        'have been paid.\n\n— SPIST Admissions',
+      html: layout({
+        heading: 'Admission approved',
+        bodyHtml:
+          `<p style="margin:0 0 16px;">Assalam-o-Alaikum ${fullName}, we are pleased to tell you ` +
+          `that your application for <strong>${program}</strong> has been <strong>approved</strong>. ` +
+          'Congratulations.</p>' +
+          '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 18px;">' +
+          detailRow('Reference number', referenceNumber) +
+          detailRow('Roll number', roll) +
+          detailRow('Class', klass) +
+          '</table>' +
+          reasonBlock(reason) +
+          '<p style="margin:0 0 10px;">To complete your enrolment, please report to the admissions ' +
+          'office in person with:</p>' +
+          '<ul style="margin:0 0 16px;padding-left:20px;">' +
+          DOCUMENTS_TO_BRING.map((item) => `<li style="margin-bottom:5px;">${item}</li>`).join('') +
+          '</ul>' +
+          '<p style="margin:0;">Your admission is confirmed once these have been verified and the ' +
+          'applicable dues have been paid.</p>',
+      }),
+    });
+  }
+
+  return send({
+    to,
+    subject: `Update on your SPIST application — ${referenceNumber}`,
+    text:
+      `Assalam-o-Alaikum ${fullName},\n\n` +
+      `Thank you for applying for ${program} at SPIST.\n\n` +
+      'After careful review, we are unable to offer you a place on this occasion.\n\n' +
+      `Reference number: ${referenceNumber}\n` +
+      (reason ? `\nMessage from the admissions office:\n${reason}\n` : '') +
+      '\nWe know this is disappointing. If you would like to discuss your application or ask ' +
+      'about other programs, please contact the admissions office — they will be glad to help.\n\n' +
+      '— SPIST Admissions',
+    html: layout({
+      heading: 'Update on your application',
+      bodyHtml:
+        `<p style="margin:0 0 14px;">Assalam-o-Alaikum ${fullName}, thank you for applying for ` +
+        `<strong>${program}</strong> at SPIST.</p>` +
+        '<p style="margin:0 0 18px;">After careful review, we are unable to offer you a place on ' +
+        'this occasion.</p>' +
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 18px;">' +
+        detailRow('Reference number', referenceNumber) +
+        '</table>' +
+        reasonBlock(reason) +
+        '<p style="margin:0;">We know this is disappointing. If you would like to discuss your ' +
+        'application, or ask about other programs, please contact the admissions office — they ' +
+        'will be glad to help.</p>',
+    }),
+  });
+}

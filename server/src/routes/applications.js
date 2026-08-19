@@ -30,32 +30,46 @@ const REQUIRED_FIELDS = [
  * Public status lookup — rate limiting
  *
  * The status route is unauthenticated, so it is the one place someone could
- * sit and guess reference numbers. Ten attempts per quarter hour per IP makes
- * that pointless while staying invisible to a real applicant. In-memory on
- * purpose: a restart clearing the counters is not worth a Redis dependency.
+ * sit and guess reference numbers.
+ *
+ * Only FAILED lookups are counted. Guessing is the thing worth stopping, and
+ * a correct reference-number-plus-email pair is proof the caller is not
+ * guessing — so an applicant refreshing their status, or the confirmation
+ * panel checking on every page load, never runs into this. Ten wrong guesses
+ * per quarter hour per IP is what actually gets blocked.
+ *
+ * In-memory on purpose: a restart clearing the counters is not worth a Redis
+ * dependency.
  * ------------------------------------------------------------------------ */
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
-const RATE_LIMIT_MAX_ATTEMPTS = 10;
-const statusAttempts = new Map();
+const RATE_LIMIT_MAX_FAILURES = 10;
+const statusFailures = new Map();
 
-/** Records an attempt for `ip`, returning false once it is over the limit. */
-function withinRateLimit(ip) {
-  const now = Date.now();
-
-  // Expired buckets are dropped on the way past, so the map cannot grow
-  // without bound on a long-running server.
-  for (const [key, bucket] of statusAttempts) {
-    if (bucket.resetAt <= now) statusAttempts.delete(key);
+/** Drops expired buckets so the map cannot grow without bound. */
+function pruneFailures(now) {
+  for (const [key, bucket] of statusFailures) {
+    if (bucket.resetAt <= now) statusFailures.delete(key);
   }
+}
 
-  const bucket = statusAttempts.get(ip);
+/** True once `ip` has used up its wrong guesses for the current window. */
+function isRateLimited(ip) {
+  const now = Date.now();
+  pruneFailures(now);
+  return (statusFailures.get(ip)?.count ?? 0) >= RATE_LIMIT_MAX_FAILURES;
+}
+
+/** Counts one wrong guess against `ip`. */
+function recordFailure(ip) {
+  const now = Date.now();
+  const bucket = statusFailures.get(ip);
+
   if (!bucket) {
-    statusAttempts.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
+    statusFailures.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return;
   }
 
   bucket.count += 1;
-  return bucket.count <= RATE_LIMIT_MAX_ATTEMPTS;
 }
 
 /**
@@ -220,10 +234,12 @@ router.post(
 router.post(
   '/status',
   asyncHandler(async (req, res) => {
-    if (!withinRateLimit(req.ip ?? 'unknown')) {
+    const callerIp = req.ip ?? 'unknown';
+
+    if (isRateLimited(callerIp)) {
       return res
         .status(429)
-        .json({ message: 'Too many status checks. Please wait a few minutes and try again.' });
+        .json({ message: 'Too many failed status checks. Please wait a few minutes and try again.' });
     }
 
     const referenceNumber = (req.body?.referenceNumber ?? '').toString().trim();
@@ -245,6 +261,7 @@ router.post(
     const application = await Application.findOne({ referenceNumber });
 
     if (!application || (application.email ?? '').trim().toLowerCase() !== email) {
+      recordFailure(callerIp);
       return res.status(404).json(notFound);
     }
 

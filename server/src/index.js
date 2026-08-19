@@ -5,6 +5,7 @@ import { connectDB } from './db.js';
 import authRoutes from './routes/auth.js';
 import applicationRoutes from './routes/applications.js';
 import uploadRoutes from './routes/uploads.js';
+import notifyRoutes from './routes/notify.js';
 
 // Defense-in-depth: log anything that slips past route-level error handling
 // instead of letting Node terminate the whole server process.
@@ -41,10 +42,28 @@ app.use(
 );
 app.use(express.json());
 
+/**
+ * A body that is not valid JSON makes express.json() throw, and the catch-all
+ * handler at the bottom would report that as an opaque 500 — which reads like
+ * a server fault when it is really a malformed request. Answer 400 and say so.
+ *
+ * Registered here, straight after the parser, so it only ever sees parse
+ * failures and never shadows a genuine error from a route.
+ */
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res
+      .status(400)
+      .json({ message: 'The request body is not valid JSON.' });
+  }
+  return next(err);
+});
+
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/uploads', uploadRoutes);
+app.use('/api/notify', notifyRoutes);
 
 // Centralized error handler — catches anything thrown/rejected in a route
 // that wasn't already handled, so the API returns JSON instead of crashing.
