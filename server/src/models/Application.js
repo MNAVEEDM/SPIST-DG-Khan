@@ -20,6 +20,24 @@ const applicationSchema = new mongoose.Schema(
     qualification: { type: String, required: true },
     program: { type: String, required: true },
     declaration: { type: Boolean, required: true },
+
+    // Uploaded via routes/uploads.js — storage paths only, never public URLs,
+    // since the bucket is private. Both are optional: an application submitted
+    // before this existed simply has no photo and an empty documents list.
+    photoPath: { type: String, default: '' },
+    documents: {
+      type: [
+        {
+          _id: false,
+          slot: { type: String, required: true },
+          label: { type: String, default: '' },
+          path: { type: String, required: true },
+          name: { type: String, default: '' },
+          size: { type: Number, default: 0 },
+        },
+      ],
+      default: [],
+    },
     referenceNumber: { type: String, required: true, unique: true },
   },
   { timestamps: true },

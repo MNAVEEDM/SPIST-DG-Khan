@@ -82,6 +82,28 @@ export async function verifyLogin(email, password) {
   return data.user;
 }
 
+/**
+ * Step 1 of forgot-password: asks the server to email a 6-digit code.
+ * Resolves even for unknown addresses — the server deliberately doesn't
+ * reveal whether an account exists.
+ */
+export async function requestPasswordReset(email) {
+  return apiFetch('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
+/** Step 2: trades the emailed code for a new password, and logs the user in. */
+export async function resetPassword({ email, code, password }) {
+  const data = await apiFetch('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ email, code, password }),
+  });
+  setToken(data.token);
+  return data.user;
+}
+
 /** Resumes a session from a stored token, if there is one and it's still valid. */
 export async function getSession() {
   if (!getToken()) return null;
@@ -114,6 +136,96 @@ export async function saveApplication(formValues) {
   return data.application;
 }
 
+/**
+ * Public status check — no account needed, just the reference number and the
+ * email the application was submitted with.
+ *
+ * Deliberately not routed through apiFetch: that attaches the session token,
+ * and this endpoint must work (identically) for a signed-out visitor.
+ */
+export async function checkApplicationStatus({ referenceNumber, email }) {
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE}/api/applications/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referenceNumber, email }),
+    });
+  } catch {
+    throw new Error('Could not reach the admissions server. Please check your connection and try again.');
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'Something went wrong. Please try again.');
+  }
+
+  return data.application;
+}
+
+/**
+ * A short-lived signed link to the applicant's own uploaded photograph.
+ * Resolves to null when they never uploaded one, so callers can simply render
+ * without a photo rather than branching on an error.
+ */
+export async function getApplicationPhotoUrl() {
+  const data = await apiFetch('/api/applications/me/photo');
+  return data.url ?? null;
+}
+
 export async function clearApplication() {
   await apiFetch('/api/applications/me', { method: 'DELETE' });
+}
+
+/* ---------------------------------------------------------------------------
+ * Uploads — applicant photo and supporting documents
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Sends one file to the admissions server, which stores it in a private
+ * bucket and returns { path, name, size, slot, label } to keep on the form.
+ *
+ * Deliberately not routed through apiFetch: that sets a JSON content type,
+ * which would break the multipart boundary. XHR rather than fetch so the form
+ * can show real upload progress on a slow connection.
+ */
+export function uploadAdmissionFile({ file, slot, label = '', onProgress }) {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    body.append('file', file);
+    body.append('slot', slot);
+    if (label) body.append('label', label);
+
+    const request = new XMLHttpRequest();
+    request.open('POST', `${API_BASE}/api/uploads`);
+
+    const token = getToken();
+    if (token) request.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    request.upload.addEventListener('progress', (event) => {
+      if (onProgress && event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+
+    request.addEventListener('load', () => {
+      let data = {};
+      try {
+        data = JSON.parse(request.responseText);
+      } catch {
+        // A proxy or crash can answer with HTML — fall through to the generic message.
+      }
+
+      if (request.status >= 200 && request.status < 300) resolve(data);
+      else reject(new Error(data.message ?? 'The file could not be uploaded. Please try again.'));
+    });
+
+    request.addEventListener('error', () =>
+      reject(new Error('Could not reach the admissions server. Please check your connection and try again.')),
+    );
+
+    request.send(body);
+  });
 }

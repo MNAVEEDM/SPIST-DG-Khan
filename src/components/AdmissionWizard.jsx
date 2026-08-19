@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SelectField, TextAreaField, TextField } from './AdmissionFormFields';
 import { Calendar, Check, ChevronLeft, ChevronRight, Mail, Phone } from './Icons';
+import AdmissionDocuments from './AdmissionDocuments';
 import { faculties, diplomaPrograms, certificateCourses } from '../data/site';
 
 /* ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ const STEPS = [
   { id: 'personal', label: 'Personal' },
   { id: 'contact', label: 'Contact' },
   { id: 'academic', label: 'Program' },
+  { id: 'documents', label: 'Documents' },
   { id: 'review', label: 'Review' },
 ];
 
@@ -36,6 +38,8 @@ const STEP_FIELDS = {
   personal: ['fullName', 'fatherName', 'cnic', 'dob', 'gender'],
   contact: ['phone', 'email', 'address'],
   academic: ['qualification', 'program'],
+  // Uploads are optional — a partial application must still be submittable.
+  documents: [],
   review: ['declaration'],
 };
 
@@ -135,6 +139,10 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
 
   const currentStep = STEPS[stepIndex];
 
+  const uploadedCount = (form.documents ?? []).filter((doc) => doc.path).length;
+  const documentSummary =
+    uploadedCount === 0 ? 'None uploaded' : `${uploadedCount} uploaded`;
+
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
     const nextValue = type === 'checkbox' ? checked : name === 'cnic' ? formatCnic(value) : value;
@@ -180,7 +188,16 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
     setSubmitError('');
 
     try {
-      await onSubmit(form);
+      // `photoPreview` is a local blob URL and `uid` only tracks rows in the
+      // UI, so neither belongs in the payload. Documents still mid-upload (no
+      // path yet) are dropped rather than saved as broken references.
+      const { photoPreview, photoName, ...rest } = form;
+      await onSubmit({
+        ...rest,
+        documents: (form.documents ?? [])
+          .filter((doc) => doc.path)
+          .map(({ uid, ...doc }) => doc),
+      });
     } catch (error) {
       setSubmitError(error.message ?? 'Something went wrong. Please try again.');
     } finally {
@@ -205,7 +222,10 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
           />
         </div>
 
-        <ol className="mt-4 grid grid-cols-4 gap-2">
+        <ol
+          className="mt-4 grid gap-2"
+          style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }}
+        >
           {STEPS.map((step, index) => {
             const isDone = index < stepIndex;
             const isCurrent = index === stepIndex;
@@ -366,6 +386,13 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
             </>
           )}
 
+          {currentStep.id === 'documents' && (
+            <AdmissionDocuments
+              values={form}
+              onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+            />
+          )}
+
           {currentStep.id === 'review' && (
             <>
               <h2 className="font-display text-xl font-bold">Review & Submit</h2>
@@ -384,6 +411,11 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
                 <ReviewRow label="Address" value={form.address} full />
                 <ReviewRow label="Previous Qualification" value={form.qualification} full />
                 <ReviewRow label="Program Applied For" value={form.program} full />
+                <ReviewRow
+                  label="Photograph"
+                  value={form.photoPath ? form.photoName || 'Uploaded' : 'Not uploaded'}
+                />
+                <ReviewRow label="Documents" value={documentSummary} />
               </dl>
 
               <div>

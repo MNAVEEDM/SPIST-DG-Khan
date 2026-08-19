@@ -82,6 +82,7 @@ export const navigation = [
     href: '/admissions/online',
     children: [
       { label: 'Online Admission', href: '/admissions/online' },
+      { label: 'Application Status', href: '/admissions/status' },
       { label: 'Fee Structure', href: '/admissions/fee-structure' },
       { label: 'Six-Month Diploma Programs', href: '/admissions/diploma-programs' },
       { label: 'Three-Month Certificate Courses', href: '/admissions/certificate-courses' },

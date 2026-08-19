@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
 import AdmissionAuthGate from '../components/AdmissionAuthGate';
@@ -8,12 +8,15 @@ import { Check, Mail, Phone } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
 import { institution } from '../data/site';
 import {
+  checkApplicationStatus,
   clearApplication,
   clearSession,
   getApplication,
+  getApplicationPhotoUrl,
   getSession,
   saveApplication,
 } from '../data/admissionAuth';
+import { printAdmissionLetter, printApplicationCopy } from '../utils/admissionPrint';
 
 /* ---------------------------------------------------------------------------
  * Typical documents requested at admission time in Pakistani HEC-recognized
@@ -41,6 +44,12 @@ function emptyForm(account) {
     qualification: '',
     program: '',
     declaration: false,
+    photoPath: '',
+    documents: [],
+    // View-only companions to photoPath: a local blob URL for the preview and
+    // the original filename. Neither is sent to the server.
+    photoPreview: '',
+    photoName: '',
   };
 }
 
@@ -178,6 +187,59 @@ export default function OnlineAdmissionPage() {
  * Confirmation state — shown once an account has a saved application.
  * ------------------------------------------------------------------------ */
 function ConfirmationPanel({ submission, onStartNewApplication, onLogout }) {
+  const [status, setStatus] = useState(null);
+  const [preparing, setPreparing] = useState('');
+  const [printError, setPrintError] = useState('');
+
+  // The admission letter only exists once the office has approved the
+  // application, and the review lives in Smart-SMS rather than here — so the
+  // panel asks the same public endpoint the status page uses. A failure
+  // (offline, rate limited) just means no letter button; the rest still works.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const result = await checkApplicationStatus({
+          referenceNumber: submission.referenceNumber,
+          email: submission.email,
+        });
+        if (!cancelled) setStatus(result.status);
+      } catch {
+        /* leave the letter hidden */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [submission.referenceNumber, submission.email]);
+
+  const handleDownloadCopy = async () => {
+    setPrintError('');
+    setPreparing('copy');
+
+    try {
+      // Signed at click time rather than on load, so the short-lived link is
+      // still valid when the print window opens.
+      const photoUrl = submission.photoPath ? await getApplicationPhotoUrl() : null;
+      printApplicationCopy({ submission, photoUrl });
+    } catch (error) {
+      setPrintError(error.message);
+    } finally {
+      setPreparing('');
+    }
+  };
+
+  const handleDownloadLetter = () => {
+    setPrintError('');
+    try {
+      printAdmissionLetter({ submission });
+    } catch (error) {
+      setPrintError(error.message);
+    }
+  };
+
   return (
     <div className="pop-in rounded-xl border border-spist-line bg-white p-7 shadow-card sm:p-9">
       <div className="flex items-start justify-between gap-4">
@@ -231,9 +293,76 @@ function ConfirmationPanel({ submission, onStartNewApplication, onLogout }) {
         <SummaryRow label="Previous Qualification" value={submission.qualification} full />
       </dl>
 
-      <button type="button" onClick={onStartNewApplication} className="btn-ghost mt-7">
-        Submit Another Application
-      </button>
+      <UploadedSummary submission={submission} />
+
+      {printError && (
+        <p role="alert" className="mt-6 text-[13.5px] font-medium text-spist-maroon">
+          {printError}
+        </p>
+      )}
+
+      <div className="mt-7 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handleDownloadCopy}
+          disabled={preparing === 'copy'}
+          className="btn-ghost disabled:opacity-70"
+        >
+          {preparing === 'copy' ? 'Preparing…' : 'Download Application Copy'}
+        </button>
+
+        {status === 'approved' && (
+          <button type="button" onClick={handleDownloadLetter} className="btn-primary">
+            <Check width="15" height="15" />
+            Download Admission Letter
+          </button>
+        )}
+
+        <button type="button" onClick={onStartNewApplication} className="btn-ghost">
+          Submit Another Application
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Applications submitted before uploads existed have no photo and no
+ * documents, so everything here is read defensively and the block simply
+ * disappears when there is nothing to show.
+ */
+function UploadedSummary({ submission }) {
+  const documents = submission.documents ?? [];
+  const hasPhoto = Boolean(submission.photoPath);
+
+  if (!hasPhoto && documents.length === 0) return null;
+
+  return (
+    <div className="mt-6 border-t border-spist-line pt-6">
+      <h3 className="text-[12px] font-bold uppercase tracking-wider text-spist-muted">
+        Uploaded Files
+      </h3>
+      <ul className="mt-3 space-y-2 text-[14px]">
+        {hasPhoto && (
+          <li className="flex items-start gap-2.5">
+            <span className="mt-1 text-spist-green" aria-hidden="true">
+              <Check width="12" height="12" strokeWidth={3} />
+            </span>
+            <span className="text-spist-muted">Applicant photograph</span>
+          </li>
+        )}
+        {documents.map((doc) => (
+          <li key={doc.path} className="flex items-start gap-2.5">
+            <span className="mt-1 text-spist-green" aria-hidden="true">
+              <Check width="12" height="12" strokeWidth={3} />
+            </span>
+            <span className="text-spist-muted">
+              {doc.label || 'Document'}
+              {doc.name ? <span className="text-spist-muted/70"> · {doc.name}</span> : null}
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -275,6 +404,19 @@ function ApplicationSidebar() {
               </li>
             ))}
           </ul>
+        </div>
+
+        <div className="rounded-xl border border-spist-line p-6 shadow-card">
+          <p className="text-[14px] leading-relaxed text-spist-muted">
+            Already applied? Check where your application stands with your reference number —{' '}
+            <Link
+              to="/admissions/status"
+              className="font-semibold text-spist-green transition-colors hover:text-spist-accent hover:underline"
+            >
+              track your application
+            </Link>
+            . No login needed.
+          </p>
         </div>
 
         <div className="overflow-hidden rounded-xl border border-spist-line shadow-card">
