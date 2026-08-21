@@ -18,6 +18,7 @@ const REQUIRED_FIELDS = [
   'address',
   'qualification',
   'program',
+  'courseId',
 ];
 
 /**
@@ -104,6 +105,19 @@ async function readSyncedReview(application) {
   }
 }
 
+/**
+ * Only a real Smart-SMS course id belongs in the synced row. When the course
+ * list could not be loaded the form falls back to its built-in list, whose
+ * ids are local placeholders — those are recorded in MongoDB but sent as null
+ * rather than written into a column that expects a real course.
+ */
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function syncableCourseId(courseId) {
+  const value = (courseId ?? '').toString().trim();
+  return UUID_PATTERN.test(value) ? value : null;
+}
+
 function sanitizeDocuments(input) {
   if (!Array.isArray(input)) return [];
 
@@ -158,6 +172,7 @@ router.post(
         address: values.address,
         qualification: values.qualification,
         program: values.program,
+        courseId: (values.courseId ?? '').toString().trim(),
         declaration: values.declaration,
         photoPath: (values.photoPath ?? '').toString().trim(),
         documents: sanitizeDocuments(values.documents),
@@ -187,6 +202,7 @@ router.post(
           address: application.address,
           qualification: application.qualification,
           program: application.program,
+          course_id: syncableCourseId(application.courseId),
           declaration: Boolean(application.declaration),
           photo_url: application.photoPath || null,
           documents: application.documents ?? [],

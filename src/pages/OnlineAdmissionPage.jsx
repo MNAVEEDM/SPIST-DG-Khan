@@ -43,6 +43,7 @@ function emptyForm(account) {
     address: '',
     qualification: '',
     program: '',
+    courseId: '',
     declaration: false,
     photoPath: '',
     documents: [],

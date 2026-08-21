@@ -15,6 +15,15 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
 
+    // Signup is not finished until a code emailed to this address is entered,
+    // so an account made with an address nobody owns can never be used.
+    // Accounts created before verification existed were backfilled to true.
+    emailVerified: { type: Boolean, default: false },
+    verifyCodeHash: { type: String, default: null },
+    verifyCodeExpiresAt: { type: Date, default: null },
+    verifyCodeSentAt: { type: Date, default: null },
+    verifyAttempts: { type: Number, default: 0 },
+
     resetCodeHash: { type: String, default: null },
     resetCodeExpiresAt: { type: Date, default: null },
     resetCodeSentAt: { type: Date, default: null },

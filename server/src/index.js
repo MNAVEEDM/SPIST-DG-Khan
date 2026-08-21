@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import applicationRoutes from './routes/applications.js';
 import uploadRoutes from './routes/uploads.js';
 import notifyRoutes from './routes/notify.js';
+import courseRoutes from './routes/courses.js';
 
 // Defense-in-depth: log anything that slips past route-level error handling
 // instead of letting Node terminate the whole server process.
@@ -64,6 +65,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/notify', notifyRoutes);
+app.use('/api/courses', courseRoutes);
 
 // Centralized error handler — catches anything thrown/rejected in a route
 // that wasn't already handled, so the API returns JSON instead of crashing.
@@ -77,7 +79,22 @@ const PORT = process.env.PORT || 5000;
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => console.log(`[server] Listening on http://localhost:${PORT}`));
+    const server = app.listen(PORT, () =>
+      console.log(`[server] Listening on http://localhost:${PORT}`),
+    );
+
+    // Without this, a failed bind is swallowed by the uncaughtException handler
+    // above: the process stays alive, the terminal still looks healthy, but
+    // nothing is listening and every request from the site fails.
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`[server] Port ${PORT} is already in use — another admissions API is running.`);
+        console.error('[server] Stop that one first, or start this with a different PORT.');
+      } else {
+        console.error('[server] Could not start:', error.message);
+      }
+      process.exit(1);
+    });
   })
   .catch((error) => {
     console.error('[server] Failed to start:', error.message);

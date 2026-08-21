@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SelectField, TextAreaField, TextField } from './AdmissionFormFields';
 import { Calendar, Check, ChevronLeft, ChevronRight, Mail, Phone } from './Icons';
 import AdmissionDocuments from './AdmissionDocuments';
+import { fetchCourses } from '../data/admissionAuth';
 import { faculties, diplomaPrograms, certificateCourses } from '../data/site';
 
 /* ---------------------------------------------------------------------------
@@ -25,6 +26,44 @@ const certificateOptions = certificateCourses.items.map((item) => ({
   value: `Three-Month Certificate: ${item.name}`,
   label: item.name,
 }));
+
+/* ---------------------------------------------------------------------------
+ * The institute's real courses come from Smart-SMS via /api/courses. The
+ * built-in lists above stay as a fallback: if that call fails, or the school
+ * has no courses recorded yet, an applicant still has something to choose
+ * rather than an empty selector.
+ *
+ * Fallback entries carry a `local:` id so the form validates identically;
+ * the server keeps that id in MongoDB but never writes it to Smart-SMS as a
+ * course reference (see syncableCourseId in routes/applications.js).
+ * ------------------------------------------------------------------------ */
+const FALLBACK_GROUPS = [
+  { label: 'Degree Programs', options: degreeOptions },
+  { label: 'Six-Month Diploma Programs', options: diplomaOptions },
+  { label: 'Three-Month Certificate Courses', options: certificateOptions },
+];
+
+const FALLBACK_COURSES = FALLBACK_GROUPS.flatMap((group) =>
+  group.options.map((option) => ({
+    id: `local:${option.value}`,
+    title: option.value,
+    label: option.label,
+  })),
+);
+
+const FALLBACK_OPTION_GROUPS = FALLBACK_GROUPS.map((group) => ({
+  label: group.label,
+  options: group.options.map((option) => ({
+    value: `local:${option.value}`,
+    label: option.label,
+  })),
+}));
+
+/** Title first, with whatever identifying detail the course actually has. */
+function courseLabel(course) {
+  const extras = [course.code, course.duration].filter(Boolean).join(" \u00b7 ");
+  return extras ? `${course.title} \u2014 ${extras}` : course.title;
+}
 
 const STEPS = [
   { id: 'personal', label: 'Personal' },
@@ -113,7 +152,9 @@ function validateAll(values) {
     errors.qualification = 'Previous qualification / last school attended is required.';
   }
 
-  if (!values.program) {
+  // Both halves are set together by the selector, so one missing means
+  // nothing was picked.
+  if (!values.program || !values.courseId) {
     errors.program = 'Please select a program to apply for.';
   }
 
@@ -138,6 +179,46 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
   const [submitError, setSubmitError] = useState('');
 
   const currentStep = STEPS[stepIndex];
+
+  const [courses, setCourses] = useState(null); // null while loading
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const list = await fetchCourses();
+        if (cancelled) return;
+
+        // An empty list is as unusable to an applicant as a failed request.
+        if (list.length > 0) {
+          setCourses(list);
+          return;
+        }
+      } catch {
+        /* fall through to the built-in list */
+      }
+
+      if (!cancelled) {
+        setCourses(FALLBACK_COURSES);
+        setUsingFallback(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** Stores the id and the title together — the title is what the applicant saw. */
+  const handleCourseChange = (event) => {
+    const courseId = event.target.value;
+    const chosen = (courses ?? []).find((course) => course.id === courseId);
+
+    setForm((prev) => ({ ...prev, courseId, program: chosen?.title ?? '' }));
+    setErrors((prev) => (prev.program ? { ...prev, program: undefined } : prev));
+  };
 
   const uploadedCount = (form.documents ?? []).filter((doc) => doc.path).length;
   const documentSummary =
@@ -369,20 +450,34 @@ export default function AdmissionWizard({ account, initialValues, onSubmit }) {
                 error={errors.qualification}
                 placeholder="e.g. FSc Pre-Medical, Govt. College DG Khan"
               />
-              <SelectField
-                id="program"
-                label="Program Applying For"
-                required
-                value={form.program}
-                onChange={handleChange}
-                error={errors.program}
-                placeholder="Select a program"
-                optionGroups={[
-                  { label: 'Degree Programs', options: degreeOptions },
-                  { label: 'Six-Month Diploma Programs', options: diplomaOptions },
-                  { label: 'Three-Month Certificate Courses', options: certificateOptions },
-                ]}
-              />
+              <div>
+                <SelectField
+                  id="program"
+                  label="Program Applying For"
+                  required
+                  value={form.courseId}
+                  onChange={handleCourseChange}
+                  error={errors.program}
+                  placeholder={courses === null ? "Loading courses…" : "Select a program"}
+                  options={
+                    usingFallback
+                      ? undefined
+                      : (courses ?? []).map((course) => ({
+                          value: course.id,
+                          label: courseLabel(course),
+                        }))
+                  }
+                  optionGroups={usingFallback ? FALLBACK_OPTION_GROUPS : undefined}
+                />
+
+                {usingFallback && (
+                  <p className="mt-1.5 text-[12.5px] text-spist-muted">
+                    We couldn't load the current course list, so this shows our standard
+                    programs. It may be out of date — the admissions office will confirm your
+                    program when they review your application.
+                  </p>
+                )}
+              </div>
             </>
           )}
 
