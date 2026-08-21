@@ -12,6 +12,7 @@ const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const smsSchoolId = process.env.SMS_SCHOOL_ID || null;
 export const smsCampusId = process.env.SMS_CAMPUS_ID || null;
+export const smsSchoolCode = process.env.SMS_SCHOOL_CODE || null;
 
 export const isSmsConfigured = Boolean(url && key && smsSchoolId);
 

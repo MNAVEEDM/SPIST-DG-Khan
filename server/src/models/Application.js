@@ -19,6 +19,12 @@ const applicationSchema = new mongoose.Schema(
     address: { type: String, required: true },
     qualification: { type: String, required: true },
     program: { type: String, required: true },
+
+    // The Smart-SMS course this application is for. `program` above keeps the
+    // title as it read when the applicant chose it, so renaming a course later
+    // never rewrites what somebody actually applied to. Applications made
+    // before courses existed simply have an empty id.
+    courseId: { type: String, default: '' },
     declaration: { type: Boolean, required: true },
 
     // Uploaded via routes/uploads.js — storage paths only, never public URLs,

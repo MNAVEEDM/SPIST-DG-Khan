@@ -55,7 +55,11 @@ async function apiFetch(path, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.message ?? 'Something went wrong. Please try again.');
+    const error = new Error(data.message ?? 'Something went wrong. Please try again.');
+    // Some failures are a state the caller must act on rather than just report
+    // — an unverified account, for instance, has to be sent to the code screen.
+    error.data = data;
+    throw error;
   }
 
   return data;
@@ -64,13 +68,33 @@ async function apiFetch(path, options = {}) {
 /* ---------------------------------------------------------------------------
  * Auth
  * ------------------------------------------------------------------------ */
+/**
+ * Starts signup. No session comes back: the account is inert until the code
+ * emailed to the address is entered, which is the whole point.
+ */
 export async function createAccount({ fullName, email, password }) {
-  const data = await apiFetch('/api/auth/signup', {
+  return apiFetch('/api/auth/signup', {
     method: 'POST',
     body: JSON.stringify({ fullName, email, password }),
   });
+}
+
+/** Finishes signup: trades the emailed code for a real session. */
+export async function verifyEmail({ email, code }) {
+  const data = await apiFetch('/api/auth/verify-email', {
+    method: 'POST',
+    body: JSON.stringify({ email, code }),
+  });
   setToken(data.token);
   return data.user;
+}
+
+/** Sends another verification code to an address still waiting on one. */
+export async function resendVerificationCode(email) {
+  return apiFetch('/api/auth/resend-verification', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
 }
 
 export async function verifyLogin(email, password) {
@@ -177,6 +201,34 @@ export async function getApplicationPhotoUrl() {
 
 export async function clearApplication() {
   await apiFetch('/api/applications/me', { method: 'DELETE' });
+}
+
+/* ---------------------------------------------------------------------------
+ * Courses
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The institute's real course list, straight from Smart-SMS.
+ *
+ * Public, so it deliberately skips apiFetch and its session token: an
+ * applicant needs to see the courses before they have an account.
+ */
+export async function fetchCourses() {
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE}/api/courses`);
+  } catch {
+    throw new Error('Could not reach the admissions server.');
+  }
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.message ?? 'The course list could not be loaded.');
+  }
+
+  return Array.isArray(data.courses) ? data.courses : [];
 }
 
 /* ---------------------------------------------------------------------------

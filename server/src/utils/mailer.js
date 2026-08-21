@@ -302,3 +302,38 @@ export async function sendAdmissionDecisionEmail({
     }),
   });
 }
+
+/**
+ * Confirms the applicant actually owns the address they signed up with.
+ *
+ * Same shape as the password reset code on purpose — an applicant who has seen
+ * one recognises the other. Until this code is entered the account cannot log
+ * in or submit an application, so a made-up address gets nowhere.
+ */
+export async function sendEmailVerificationEmail({ to, fullName, code, minutesValid }) {
+  return send({
+    to,
+    subject: `${code} is your SPIST verification code`,
+    text:
+      `Assalam-o-Alaikum ${fullName},\n\n` +
+      `Your verification code is: ${code}\n\n` +
+      `Enter it on the admission page to finish creating your account. It expires in ` +
+      `${minutesValid} minutes.\n\n` +
+      "If you didn't try to create a SPIST applicant account, you can ignore this email — " +
+      'no account will be activated without this code.\n\n— SPIST Admissions',
+    html: layout({
+      heading: 'Verify your email address',
+      bodyHtml:
+        `<p style="margin:0 0 16px;">Assalam-o-Alaikum ${fullName}, enter this code on the ` +
+        'admission page to finish creating your account:</p>' +
+        '<p style="margin:0 0 16px;text-align:center;">' +
+        '<span style="display:inline-block;padding:14px 26px;background:#f1f6f2;border:1px solid #cfe0d5;' +
+        'border-radius:10px;font-size:28px;font-weight:700;letter-spacing:7px;color:#14532d;">' +
+        `${code}</span></p>` +
+        `<p style="margin:0 0 10px;">This code expires in <strong>${minutesValid} minutes</strong>.</p>` +
+        '<p style="margin:0;color:#7a8781;font-size:13px;">If you didn\'t try to create a SPIST ' +
+        'applicant account, you can ignore this email — no account will be activated without ' +
+        'this code.</p>',
+    }),
+  });
+}

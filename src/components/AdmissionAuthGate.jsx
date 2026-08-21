@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 import { TextField } from './AdmissionFormFields';
 import { Check, ChevronLeft, Mail } from './Icons';
-import { createAccount, requestPasswordReset, resetPassword, verifyLogin } from '../data/admissionAuth';
+import {
+  createAccount,
+  requestPasswordReset,
+  resendVerificationCode,
+  resetPassword,
+  verifyEmail,
+  verifyLogin,
+} from '../data/admissionAuth';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,12 +21,17 @@ const EMPTY_VALUES = { fullName: '', email: '', password: '', confirmPassword: '
  * Signup / login gate shown before the multi-step application form, backed by
  * the Express + MongoDB API (see `src/data/admissionAuth.js`).
  *
- * Three modes share this panel: `login`, `signup`, and `forgot` — the last one
- * runs in two steps, emailing a 6-digit code and then exchanging it for a new
- * password, after which the applicant is logged straight in.
+ * Four screens share this panel:
+ *   login   — email + password
+ *   signup  — creates an unverified account and emails a code
+ *   verify  — the code that finishes signup; no session exists until it passes
+ *   forgot  — the same code idea, applied to resetting a password
+ *
+ * Signup and forgot-password both end on a code screen, so they share the
+ * field rendering, the resend countdown and the validation below.
  */
 export default function AdmissionAuthGate({ onAuthenticated }) {
-  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot'
+  const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'verify' | 'forgot'
   const [forgotStep, setForgotStep] = useState('request'); // 'request' | 'verify'
   const [values, setValues] = useState(EMPTY_VALUES);
   const [errors, setErrors] = useState({});
@@ -56,9 +68,16 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
     if (formError) setFormError('');
   };
 
+  const isForgot = mode === 'forgot';
+  const isVerifyEmail = mode === 'verify';
+  const isForgotVerify = isForgot && forgotStep === 'verify';
+  // Both flows end on a screen asking for a 6-digit code.
+  const isCodeScreen = isVerifyEmail || isForgotVerify;
+  const screen = isVerifyEmail ? 'verify' : isForgot ? forgotStep : mode;
+
   const validate = () => {
     const nextErrors = {};
-    const needsNewPassword = mode === 'signup' || (mode === 'forgot' && forgotStep === 'verify');
+    const needsNewPassword = mode === 'signup' || isForgotVerify;
 
     if (mode === 'signup' && !values.fullName.trim()) {
       nextErrors.fullName = 'Full name is required.';
@@ -70,12 +89,15 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
       nextErrors.email = 'Enter a valid email address.';
     }
 
-    if (mode === 'forgot' && forgotStep === 'verify' && !/^\d{6}$/.test(values.code.trim())) {
+    if (isCodeScreen && !/^\d{6}$/.test(values.code.trim())) {
       nextErrors.code = 'Enter the 6-digit code from your email.';
     }
 
-    // The request step of a password reset only needs the email address.
-    if (mode !== 'forgot' || forgotStep === 'verify') {
+    // Verifying an email asks for nothing but the code; the request step of a
+    // password reset asks for nothing but the address.
+    const needsPassword = mode === 'login' || mode === 'signup' || isForgotVerify;
+
+    if (needsPassword) {
       if (!values.password) {
         nextErrors.password = 'Password is required.';
       } else if (needsNewPassword && values.password.length < 6) {
@@ -88,6 +110,20 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
     }
 
     return nextErrors;
+  };
+
+  /** Moves to the code screen after a signup, or a login that needs verifying. */
+  const goToVerification = (message, emailConfigured) => {
+    setMode('verify');
+    setErrors({});
+    setFormError('');
+    setResendIn(RESEND_COOLDOWN_SECONDS);
+    setValues((prev) => ({ ...prev, code: '', password: '', confirmPassword: '' }));
+    setNotice(
+      emailConfigured === false
+        ? `${message} Email sending isn't configured on this server yet, so the code was printed to the server console instead.`
+        : message,
+    );
   };
 
   const sendResetCode = async () => {
@@ -112,22 +148,33 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
     setFormError('');
 
     try {
-      if (mode === 'forgot' && forgotStep === 'request') {
+      if (isVerifyEmail) {
+        const account = await verifyEmail({ email: values.email.trim(), code: values.code.trim() });
+        onAuthenticated(account);
+      } else if (isForgot && forgotStep === 'request') {
         await sendResetCode();
-      } else if (mode === 'forgot') {
+      } else if (isForgot) {
         const account = await resetPassword({
           email: values.email.trim(),
           code: values.code.trim(),
           password: values.password,
         });
         onAuthenticated(account);
+      } else if (mode === 'signup') {
+        const response = await createAccount(values);
+        goToVerification(response.message, response.emailConfigured);
       } else {
-        const account =
-          mode === 'signup' ? await createAccount(values) : await verifyLogin(values.email, values.password);
+        const account = await verifyLogin(values.email, values.password);
         onAuthenticated(account);
       }
     } catch (error) {
-      setFormError(error.message);
+      // A correct password on an unverified account isn't a failure — the
+      // server has already sent a fresh code, so follow it to the code screen.
+      if (error.data?.verificationRequired) {
+        goToVerification(error.data.message, error.data.emailConfigured);
+      } else {
+        setFormError(error.message);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -139,7 +186,17 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
     setSubmitting(true);
     clearMessages();
     try {
-      await sendResetCode();
+      if (isVerifyEmail) {
+        const response = await resendVerificationCode(values.email.trim());
+        setResendIn(RESEND_COOLDOWN_SECONDS);
+        setNotice(
+          response.emailConfigured === false
+            ? `${response.message} Email sending isn't configured on this server yet, so the code was printed to the server console instead.`
+            : response.message,
+        );
+      } else {
+        await sendResetCode();
+      }
     } catch (error) {
       setFormError(error.message);
     } finally {
@@ -147,39 +204,42 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
     }
   };
 
-  const isForgot = mode === 'forgot';
-  const isVerifyStep = isForgot && forgotStep === 'verify';
-  const screen = isForgot ? forgotStep : mode;
-
   const [heading, subheading] = {
     login: ['Log In to Apply', 'Log in to continue or review your online admission application.'],
     signup: [
       'Create Your Applicant Account',
       'Create an account first, then fill out your application step by step. You can return and log in any time to check your submission.',
     ],
+    verify: [
+      'Confirm Your Email Address',
+      `We've sent a 6-digit code to ${values.email.trim()}. Enter it to finish creating your account.`,
+    ],
     request: [
       'Reset Your Password',
       "Enter the email address you signed up with and we'll send you a 6-digit reset code.",
     ],
-    verify: [
+    'verify-reset': [
       'Enter Your Reset Code',
       `We've sent a 6-digit code to ${values.email.trim()}. Enter it below along with your new password.`,
     ],
-  }[screen];
+  }[screen === 'verify' && isForgot ? 'verify-reset' : screen];
 
   const submitLabel = {
     login: 'Log In',
-    signup: 'Create Account & Continue',
+    signup: 'Send Verification Code',
+    verify: 'Verify & Continue',
     request: 'Send Reset Code',
-    verify: 'Update Password & Log In',
-  }[screen];
+    'verify-reset': 'Update Password & Log In',
+  }[screen === 'verify' && isForgot ? 'verify-reset' : screen];
+
+  const showBackLink = isForgot || isVerifyEmail;
 
   return (
     <div
-      key={screen}
+      key={screen + (isForgot ? '-reset' : '')}
       className="step-enter rounded-xl border border-spist-line bg-white p-7 shadow-card sm:p-9"
     >
-      {isForgot ? (
+      {showBackLink ? (
         <button
           type="button"
           onClick={() => switchMode('login')}
@@ -240,14 +300,14 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
           onChange={handleChange}
           error={errors.email}
           autoComplete="email"
-          icon={isForgot ? Mail : undefined}
-          readOnly={isVerifyStep}
+          icon={showBackLink ? Mail : undefined}
+          readOnly={isCodeScreen}
         />
 
-        {isVerifyStep && (
+        {isCodeScreen && (
           <TextField
             id="code"
-            label="6-Digit Reset Code"
+            label="6-Digit Code"
             required
             value={values.code}
             onChange={handleChange}
@@ -259,11 +319,11 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
           />
         )}
 
-        {(!isForgot || isVerifyStep) && (
+        {(mode === 'login' || mode === 'signup' || isForgotVerify) && (
           <div>
             <TextField
               id="password"
-              label={isVerifyStep ? 'New Password' : 'Password'}
+              label={isForgotVerify ? 'New Password' : 'Password'}
               type="password"
               required
               value={values.password}
@@ -283,10 +343,10 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
           </div>
         )}
 
-        {(mode === 'signup' || isVerifyStep) && (
+        {(mode === 'signup' || isForgotVerify) && (
           <TextField
             id="confirmPassword"
-            label={isVerifyStep ? 'Confirm New Password' : 'Confirm Password'}
+            label={isForgotVerify ? 'Confirm New Password' : 'Confirm Password'}
             type="password"
             required
             value={values.confirmPassword}
@@ -317,7 +377,7 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
             {submitting ? 'Please wait…' : submitLabel}
           </button>
 
-          {isVerifyStep && (
+          {isCodeScreen && (
             <button
               type="button"
               onClick={handleResend}
@@ -332,10 +392,9 @@ export default function AdmissionAuthGate({ onAuthenticated }) {
 
       <div className="mt-6 rounded-lg border-l-4 border-spist-accent bg-spist-accent-soft/60 p-4" role="note">
         <p className="text-[13px] leading-relaxed text-spist-charcoal">
-          Your password is hashed before it's stored — SPIST never keeps it in plain text. Reset
-          codes are hashed too, expire after 15 minutes, and lock out after 5 wrong attempts. This
-          is still a student build without signup email verification, so please use a throwaway
-          password rather than one you use elsewhere.
+          Your password is hashed before it's stored — SPIST never keeps it in plain text. Every
+          new account has to confirm its email address with a 6-digit code, and those codes are
+          hashed too, expire after 15 minutes, and lock out after 5 wrong attempts.
         </p>
       </div>
     </div>
