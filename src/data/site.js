@@ -795,11 +795,13 @@ export const galleryItems = [
     category: 'Labs',
     caption: 'Chemistry Research Laboratory',
     src: 'public/campus gallary/lab/chem lab.jpg',
+    
   },
   {
     id: 2,
     category: 'Campus',
     caption: 'Main Academic Block',
+    src: 'public/campus gallary/lab/campus.jpg',
     src: 'public/campus gallary/campus/campus.jpg',
   },
   {
@@ -830,13 +832,14 @@ export const galleryItems = [
     id: 7,
     category: 'Campus',
     caption: 'Student Lounge & Cafeteria',
+    src: 'public/campus gallary/cafeteria.jpg',
     src: 'public/campus gallary/campus/cafeteria.jpg',
   },
   {
     id: 8,
     category: 'Labs',
     caption: 'Analytical Instrumentation Suite',
-    src: '/campus gallary/lab/Analytical Instrumentation Suite.jpeg',
+    src: 'public/campus gallary/lab/labs.jpg',
   },
 ];
 
