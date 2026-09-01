@@ -82,6 +82,7 @@ export const navigation = [
     href: '/admissions/online',
     children: [
       { label: 'Online Admission', href: '/admissions/online' },
+      { label: 'Application Status', href: '/admissions/status' },
       { label: 'Fee Structure', href: '/admissions/fee-structure' },
       { label: 'Six-Month Diploma Programs', href: '/admissions/diploma-programs' },
       { label: 'Three-Month Certificate Courses', href: '/admissions/certificate-courses' },
@@ -801,6 +802,7 @@ export const galleryItems = [
     category: 'Campus',
     caption: 'Main Academic Block',
     src: 'public/campus gallary/lab/campus.jpg',
+    src: 'public/campus gallary/campus/campus.jpg',
   },
   {
     id: 3,
@@ -831,6 +833,7 @@ export const galleryItems = [
     category: 'Campus',
     caption: 'Student Lounge & Cafeteria',
     src: 'public/campus gallary/cafeteria.jpg',
+    src: 'public/campus gallary/campus/cafeteria.jpg',
   },
   {
     id: 8,
