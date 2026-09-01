@@ -107,7 +107,7 @@ export default function Navbar() {
 
       {/* ---------------- Tier 2 — primary navigation ---------------- */}
       <div className={`on-dark glass-nav ${scrolled ? 'glass-nav-scrolled' : ''}`}>
-        <div className="container-spist grid grid-cols-[minmax(110px,1fr)_auto_minmax(110px,1fr)] items-center gap-4">
+        <div className="grid w-full grid-cols-[minmax(110px,1fr)_auto_minmax(110px,1fr)] items-center gap-4">
           {/* Brand — white chip keeps the crest crisp against the glass. The
               minmax() floor on this column (matched on the mirror column on
               the right) keeps the logo from ever being squeezed by the grid
@@ -115,7 +115,7 @@ export default function Navbar() {
               block below tracks the true center of the row. */}
           <Link
             to="/"
-            className="flex shrink-0 items-center justify-self-start py-2 pl-0.5"
+            className="flex shrink-0 items-center justify-self-start py-2 pl-0"
             aria-label={`${institution.shortName} — home`}
           >
             <Logo
@@ -145,7 +145,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="-mr-1 flex h-11 w-11 items-center justify-center justify-self-end rounded-md text-white transition-colors duration-200 hover:bg-white/10 xl:hidden"
+            className="mr-3 flex h-11 w-11 items-center justify-center justify-self-end rounded-md text-white transition-colors duration-200 hover:bg-white/10 xl:hidden"
             aria-label="Open navigation menu"
             aria-expanded={drawerOpen}
             aria-controls="mobile-navigation"
