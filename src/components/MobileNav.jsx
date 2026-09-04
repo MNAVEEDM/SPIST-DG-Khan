@@ -13,7 +13,7 @@ const TIERS = [
     toggle:
       'flex w-full items-center justify-between gap-3 border-l-4 border-transparent px-5 py-3.5 text-left text-[15px] font-semibold text-spist-charcoal transition-colors hover:bg-spist-accent-soft',
     childWrapper: 'bg-spist-accent-soft/50 py-1',
-    chevron: undefined,
+    chevron: '16',
   },
   {
     leaf: 'block border-l-4 py-2.5 pl-8 pr-5 text-[14px] transition-colors',
@@ -131,7 +131,7 @@ export default function MobileNav({ open, onClose }) {
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-[60] bg-spist-charcoal/50 backdrop-blur-[2px] transition-opacity duration-300 xl:hidden ${
+        className={`fixed inset-0 z-[60] bg-spist-charcoal/50 backdrop-blur-[2px] transition-opacity duration-300 nav:hidden ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={onClose}
@@ -141,7 +141,7 @@ export default function MobileNav({ open, onClose }) {
       {/* Drawer */}
       <div
         id="mobile-navigation"
-        className={`glass-drawer fixed inset-y-0 right-0 z-[70] flex w-[88%] max-w-sm flex-col shadow-2xl transition-transform duration-300 ease-out xl:hidden ${
+        className={`glass-drawer fixed inset-y-0 right-0 z-[70] flex w-[88%] max-w-sm flex-col shadow-2xl transition-transform duration-300 ease-out nav:hidden ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
         role="dialog"
