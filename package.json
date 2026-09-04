@@ -9,7 +9,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "dev:api": "npm --prefix server run dev",
-    "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1"
+    "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "dev:api:local": "npm --prefix server run dev:localdb",
+    "dev:all:local": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev-local.ps1"
   },
   "dependencies": {
     "react": "^19.2.0",
