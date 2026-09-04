@@ -286,7 +286,6 @@ export const chairpersonFullMessage = {
     valediction: 'With best wishes,',
     name: 'Dr. Mina Ehsan Leghari Sahiba',
     role: 'Chairperson',
-    
     recognition: 'Recognized by HEC & Government of Punjab',
   },
 };

@@ -19,6 +19,14 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
+  /* ---- Navigation breakpoint -------------------------------------------
+     The desktop nav is ~1220px of menu items on its own; with the logo,
+     the mirror gutter that centres it and the row padding it needs about
+     1536px before it stops running off the right edge. Tailwind's own xl
+     (1280px) is too early, so the drawer stays in charge until this width.
+     --------------------------------------------------------------------- */
+  --breakpoint-nav: 1560px;
+
   /* ---- Elevation scale (0 → 4) ---------------------------------------- */
   --shadow-e1: 0 1px 2px rgb(40 40 35 / 0.06), 0 2px 8px -2px rgb(40 40 35 / 0.08);
   --shadow-card: 0 2px 4px -1px rgb(40 40 35 / 0.06), 0 8px 24px -10px rgb(40 40 35 / 0.16);
@@ -59,7 +67,7 @@
   html {
     scroll-behavior: smooth;
     /* keeps anchor targets clear of the sticky header */
-    scroll-padding-top: 7rem;
+    scroll-padding-top: calc(var(--header-h, 125px) + 1rem);
   }
 
   body {
@@ -199,15 +207,37 @@
   }
 
   /* =====================================================================
-     Clears the fixed header. Applied to the first section of every page.
+     Clearing the fixed header.
+
+     The height is measured by Navbar.jsx into --header-h rather than
+     hard-coded: the utility strip wraps to a second line on narrow screens
+     and the logo shrinks on scroll, so no single number is right. The
+     fallback is the unscrolled desktop height, which covers the first paint.
+
+     Two classes because the callers differ. .header-offset is bare
+     clearance, for content that centres itself in a tall section. Inner
+     page banners need clearance PLUS their own top spacing, and it has to
+     come from one declaration: a Tailwind pt-* utility on the same element
+     sits in a later cascade layer and would silently win, which is exactly
+     what used to bury the top third of every page title behind the bar.
      ===================================================================== */
   .header-offset {
-    padding-top: 92px;
+    padding-top: var(--header-h, 125px);
+  }
+
+  .banner-offset {
+    padding-top: calc(var(--header-h, 125px) + 3.5rem);
   }
 
   @media (min-width: 640px) {
-    .header-offset {
-      padding-top: 96px;
+    .banner-offset {
+      padding-top: calc(var(--header-h, 125px) + 4rem);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .banner-offset {
+      padding-top: calc(var(--header-h, 125px) + 5rem);
     }
   }
 
@@ -281,6 +311,47 @@
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;
+}
+
+/* Phone treatment for both pieces of artwork.
+
+   Position: the images are landscape (the hero is 1264x842), and `cover` on a
+   portrait viewport shows barely 40% of their width. Anchoring right — which
+   keeps the gate clear of the headline on a desktop — cropped the SPIST sign,
+   the subject, clean off the left, so the photo read as a slice of wall and
+   trees. Centring puts the gate back in that narrow window.
+
+   Wash: the desktop gradient runs at 120deg because the headline sits in the
+   left third. Portrait turns that into a mostly top-to-bottom fade whose pale
+   end lands exactly where the headline is, and white text was sitting on the
+   bare photo. This one is vertical and dark the whole way down, so the text
+   keeps its contrast and the photo still reads through it. */
+@media (max-width: 767px) {
+  .hero-bg {
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(7, 40, 26, 0.82) 0%,
+        rgba(11, 58, 34, 0.72) 45%,
+        rgba(7, 40, 26, 0.86) 100%
+      ),
+      url('/hero/hero background.png');
+  }
+
+  .banner-bg {
+    background-image:
+      linear-gradient(
+        180deg,
+        rgba(7, 40, 26, 0.94) 0%,
+        rgba(11, 58, 34, 0.86) 100%
+      ),
+      url('/images/banner-campus.svg');
+  }
+
+  .hero-bg,
+  .banner-bg {
+    background-position: center center;
+  }
 }
 
 /* ---------- Decorative brand pattern (stands in for photography) ---------- */

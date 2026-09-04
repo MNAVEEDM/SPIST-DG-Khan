@@ -16,8 +16,8 @@ export default function PageBanner({ title, trail = [], intro }) {
         <span className="absolute inset-8 rounded-full border border-white/10" />
       </div>
 
-      {/* header-offset clears the fixed glass header */}
-      <div className="container-spist header-offset relative pb-14 pt-14 sm:pb-16 sm:pt-16 lg:pb-20 lg:pt-20">
+      {/* banner-offset clears the fixed glass header and adds the banner spacing */}
+      <div className="container-spist banner-offset relative pb-14 sm:pb-16 lg:pb-20">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-white/65">
             <li>

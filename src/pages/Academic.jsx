@@ -24,9 +24,13 @@ export default function Academic({ intro }) {
       {/* ---------- Faculty directory ---------- */}
       <section className="bg-white py-14 sm:py-16 lg:py-20">
         <div className="container-spist">
+          {/* min-w-0 on the cards: a grid item defaults to min-width:auto, so
+              the nowrap program titles inside each card were widening it past
+              the column and scrolling the whole page sideways on a phone. The
+              titles already truncate once the card is allowed to shrink. */}
           <div className="grid gap-6 lg:grid-cols-3">
             {faculties.map((faculty, index) => (
-              <Reveal key={faculty.id} delay={index * 110}>
+              <Reveal key={faculty.id} delay={index * 110} className="min-w-0">
                 <article className="flex h-full flex-col rounded-xl border border-spist-line bg-white p-7 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-spist-accent/60 hover:shadow-e3">
                   <h2 className="font-display text-lg font-bold leading-snug">{faculty.name}</h2>
                   <p className="mt-3 flex-1 text-[14px] leading-relaxed text-spist-muted">
