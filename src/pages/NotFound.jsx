@@ -4,7 +4,7 @@ import { ArrowRight } from '../components/Icons';
 export default function NotFound() {
   return (
     <section className="banner-bg relative isolate flex min-h-[70vh] items-center overflow-hidden">
-      <div className="container-spist header-offset relative pb-20 pt-20 text-center">
+      <div className="container-spist banner-offset relative pb-20 text-center">
         <p className="font-display text-7xl font-extrabold text-white/20 sm:text-8xl">404</p>
 
         <h1 className="mt-4 font-display text-3xl font-extrabold text-white sm:text-4xl">

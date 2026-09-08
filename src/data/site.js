@@ -331,7 +331,6 @@ export const chairpersonFullMessage = {
     valediction: 'With best wishes,',
     name: 'Dr. Mina Ehsan Leghari Sahiba',
     role: 'Chairperson',
-    
     recognition: 'Recognized by HEC & Government of Punjab',
   },
 };
@@ -839,7 +838,7 @@ export const galleryItems = [
     id: 1,
     category: 'Labs',
     caption: 'Chemistry Research Laboratory',
-    src: 'public/campus gallary/lab/chem lab.jpg',
+    src: '/campus gallary/lab/chem lab.jpg',
   },
   {
     id: 2,
@@ -879,13 +878,13 @@ export const galleryItems = [
     id: 7,
     category: 'Campus',
     caption: 'Student Lounge & Cafeteria',
-    src: 'public/campus gallary/campus/cafeteria.jpg',
+    src: '/campus gallary/campus/cafeteria.jpg',
   },
   {
     id: 8,
     category: 'Labs',
     caption: 'Analytical Instrumentation Suite',
-    src: '/campus gallary/lab/Analytical Instrumentation Suite.jpeg',
+    src: '/campus gallary/lab/labs.jpg',
   },
 ];
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { institution, navigation } from '../data/site';
 import { Facebook, Mail, MapPin, Menu, Phone, WhatsApp } from './Icons';
@@ -34,8 +34,39 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  /**
+   * Publishes the header's real height as `--header-h`, which `.header-offset`
+   * and `scroll-padding-top` both consume (see index.css).
+   *
+   * It has to be measured rather than hard-coded: the height moves with the
+   * logo size, and the utility strip above it wraps to a second line on narrow
+   * screens. A fixed padding guess was leaving every inner page's <h1> partly
+   * behind the bar.
+   *
+   * The height is read while unscrolled — that is when the utility strip is
+   * expanded and the header is at its tallest, and it is also the only moment
+   * the offset matters, since the banner sits at the very top of the page.
+   */
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const publish = () => {
+      if (window.scrollY > 40) return;
+      document.documentElement.style.setProperty(
+        '--header-h',
+        `${Math.round(header.getBoundingClientRect().height)}px`,
+      );
+    };
+
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 w-full">
+    <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 w-full">
       {/* ---------------- Tier 1 — utility bar ---------------- */}
       <div
         className={`glass-utility overflow-hidden text-white transition-[max-height,opacity] duration-300 ease-out ${
@@ -99,7 +130,16 @@ export default function Navbar() {
 
       {/* ---------------- Tier 2 — primary navigation ---------------- */}
       <div className={`on-dark glass-nav ${scrolled ? 'glass-nav-scrolled' : ''}`}>
-        <div className="container-spist grid grid-cols-[minmax(110px,1fr)_auto_minmax(110px,1fr)] items-center gap-4">
+        {/* Every child below is placed on an explicit column. Auto-placement
+            cannot be relied on here: below `nav:` the desktop menu is
+            display:none, which takes it out of the grid entirely, and the
+            drawer button then slides into the empty middle column and renders
+            mid-screen instead of at the right edge.
+
+            Padded rather than wrapped in `container-spist`: the desktop menu
+            is close to 1220px on its own, so capping this row at the
+            container's 1280px would push it off the right edge. */}
+        <div className="grid w-full grid-cols-[minmax(110px,1fr)_auto_minmax(110px,1fr)] items-center gap-4 px-4 sm:px-6 lg:px-8">
           {/* Brand — white chip keeps the crest crisp against the glass. The
               minmax() floor on this column (matched on the mirror column on
               the right) keeps the logo from ever being squeezed by the grid
@@ -107,7 +147,7 @@ export default function Navbar() {
               block below tracks the true center of the row. */}
           <Link
             to="/"
-            className="flex shrink-0 items-center justify-self-start py-2 pl-0.5"
+            className="col-start-1 flex shrink-0 items-center justify-self-start py-2"
             aria-label={`${institution.shortName} — home`}
           >
             <Logo
@@ -119,7 +159,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop navigation — centered across the full row via the flanking columns */}
-          <nav aria-label="Main navigation" className="hidden xl:block">
+          <nav aria-label="Main navigation" className="col-start-2 hidden nav:block">
             <ul className="flex items-center">
               {navigation.map((item, index) => (
                 <MegaMenu
