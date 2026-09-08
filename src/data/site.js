@@ -36,6 +36,51 @@ export const institution = {
 };
 
 /* ---------------------------------------------------------------------------
+ * PORTAL LOGINS
+ *
+ * The header "Login" menu, the mobile drawer and the footer all read this one
+ * array, so a URL only ever has to be corrected here.
+ *
+ * The portal (the spist-project SchoolPortal app) gives each role a door of its
+ * own at /login/<role>: the role picker is not rendered there at all, and the
+ * page titles itself "Student Portal". Somebody who picked their role in this
+ * menu has already answered that question once.
+ *
+ * The path form is what does that. Its /login?role=<role> still works, but only
+ * preselects the picker rather than replacing it — so linking that way would
+ * put the whole list of roles back in front of the visitor.
+ *
+ * The portal's normalizeRole() accepts these friendly spellings — `admin`
+ * resolves to its internal school_admin — and ignores anything it can't place,
+ * so a wrong value degrades to the plain picker rather than an error.
+ *
+ * Base URL is an env var because the portal runs on localhost:5174 in
+ * development and will move to a real host once it is deployed; hardcoding it
+ * here would ship a dead link.
+ *
+ * Order matters: it is the order the menu renders, students first because they
+ * are the overwhelming majority of the traffic.
+ * ------------------------------------------------------------------------ */
+const PORTAL_BASE_URL = import.meta.env.VITE_PORTAL_BASE_URL || 'http://localhost:5174';
+
+const portalRoles = [
+  { role: 'student', label: 'Login as Student' },
+  { role: 'teacher', label: 'Login as Teacher' },
+  { role: 'parent', label: 'Login as Parent' },
+  { role: 'admin', label: 'Login as Admin' },
+  { role: 'registrar', label: 'Login as Registrar' },
+];
+
+export const portals = portalRoles.map(({ role, label }) => ({
+  role,
+  label,
+  url: `${PORTAL_BASE_URL}/login/${role}`,
+}));
+
+/** The student portal, for the places that link to just that one (footer). */
+export const studentPortal = portals.find((portal) => portal.role === 'student');
+
+/* ---------------------------------------------------------------------------
  * NAVIGATION
  *
  * Edit ORDER and LABELS here — the desktop mega-menu, the mobile accordion
@@ -799,7 +844,11 @@ export const galleryItems = [
     id: 2,
     category: 'Campus',
     caption: 'Main Academic Block',
-    src: '/campus gallary/campus/campus.jpg',
+    // Paths here are URLs, not file paths: everything in public/ is served from
+    // the root, so the leading `public/` has to go or the image 404s in a built
+    // site. Vite warns about it in dev but still serves the file, which is why
+    // it can look fine locally and be a blank tile in production.
+    src: '/campus gallary/campus/campus-front.jpg',
   },
   {
     id: 3,

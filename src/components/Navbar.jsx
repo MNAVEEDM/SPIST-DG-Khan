@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { institution, navigation } from '../data/site';
-import { Facebook, Mail, MapPin, Menu, Phone, User, WhatsApp } from './Icons';
+import { Facebook, Mail, MapPin, Menu, Phone, WhatsApp } from './Icons';
 import Logo from './Logo';
 import MegaMenu from './MegaMenu';
 import MobileNav from './MobileNav';
+import PortalMenu from './PortalMenu';
 
 /**
  * Two-tier glass header:
@@ -18,13 +19,13 @@ import MobileNav from './MobileNav';
  * strip collapses away at the same point to keep the fixed header compact.
  *
  * Deliberately NOT glassed: the maroon active-item underline and the maroon
- * Student Portal button both stay fully solid for emphasis.
+ * Login button both stay fully solid for emphasis.
  */
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [openIndex, setOpenIndex] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const headerRef = useRef(null);
+  const [portalOpen, setPortalOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -123,16 +124,6 @@ export default function Navbar() {
             >
               <WhatsApp width="14" height="14" />
             </a>
-
-            {/* Solid maroon — intentionally not glassed */}
-            <a
-              href={institution.portalUrl}
-              className="ml-1.5 inline-flex items-center gap-1.5 rounded bg-spist-maroon px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide text-white shadow-e1 transition-colors duration-200 hover:bg-spist-maroon-dark"
-            >
-              <User width="13" height="13" />
-              <span className="hidden sm:inline">Student Portal</span>
-              <span className="sm:hidden">Login</span>
-            </a>
           </div>
         </div>
       </div>
@@ -182,17 +173,28 @@ export default function Navbar() {
             </ul>
           </nav>
 
-          {/* Drawer trigger — 44x44 minimum */}
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="col-start-3 flex h-11 w-11 items-center justify-center justify-self-end rounded-md text-white transition-colors duration-200 hover:bg-white/10 nav:hidden"
-            aria-label="Open navigation menu"
-            aria-expanded={drawerOpen}
-            aria-controls="mobile-navigation"
-          >
-            <Menu />
-          </button>
+          {/* Right gutter — the column that mirrors the logo's, so the nav
+              block above stays centred on the row. Login sits at the far edge
+              on every size; the drawer trigger joins it below xl. */}
+          <div className="flex items-center justify-end gap-1.5 justify-self-end">
+            <PortalMenu
+              open={portalOpen}
+              onOpen={() => setPortalOpen(true)}
+              onClose={() => setPortalOpen(false)}
+            />
+
+            {/* Drawer trigger — 44x44 minimum */}
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="-mr-1 flex h-11 w-11 items-center justify-center rounded-md text-white transition-colors duration-200 hover:bg-white/10 xl:hidden"
+              aria-label="Open navigation menu"
+              aria-expanded={drawerOpen}
+              aria-controls="mobile-navigation"
+            >
+              <Menu />
+            </button>
+          </div>
         </div>
       </div>
 
