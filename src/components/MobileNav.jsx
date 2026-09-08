@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { navigation, institution } from '../data/site';
+import { navigation, institution, portals } from '../data/site';
 import { ChevronDown, Close, Mail, Phone, User } from './Icons';
 import Logo from './Logo';
 
@@ -173,13 +173,29 @@ export default function MobileNav({ open, onClose }) {
 
         {/* Drawer footer — utility actions that live in the top bar on desktop */}
         <div className="space-y-3 border-t border-spist-line bg-spist-green px-5 py-4 text-white on-dark">
-          <a
-            href={institution.portalUrl}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-spist-maroon px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-spist-maroon-dark"
-          >
-            <User width="15" height="15" />
-            Student Portal
-          </a>
+          {/* The header's Login dropdown, flattened — a drawer is already a
+              list, so a second nested menu would just add a tap for nothing.
+              Two columns keeps all four roles above the fold on a short phone. */}
+          <div>
+            <p className="mb-2 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wide text-white/70">
+              <User width="14" height="14" />
+              Login to portal
+            </p>
+            {/* last:odd — an odd number of roles would leave the final chip
+                stranded beside a gap, so it takes the whole row instead. */}
+            <ul className="grid grid-cols-2 gap-2">
+              {portals.map((portal) => (
+                <li key={portal.role} className="last:odd:col-span-2">
+                  <a
+                    href={portal.url}
+                    className="flex w-full items-center justify-center rounded-md bg-spist-maroon px-3 py-2.5 text-center text-[13px] font-semibold capitalize text-white transition-colors hover:bg-spist-maroon-dark"
+                  >
+                    {portal.role}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
           <a
             href={`tel:${institution.phones[0].replace(/-/g, '')}`}
             className="flex items-center gap-2 text-sm text-white/90 hover:text-white"

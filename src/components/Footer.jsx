@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { footerDepartments, institution, navigation } from '../data/site';
+import { footerDepartments, institution, navigation, studentPortal } from '../data/site';
 import { ArrowRight, Clock, Facebook, Mail, MapPin, Phone, WhatsApp } from './Icons';
 import Logo from './Logo';
 
@@ -192,7 +192,7 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <a href={institution.portalUrl} className="transition-colors hover:text-white">
+              <a href={studentPortal.url} className="transition-colors hover:text-white">
                 Student Portal
               </a>
             </li>
