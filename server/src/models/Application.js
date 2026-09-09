@@ -44,6 +44,32 @@ const applicationSchema = new mongoose.Schema(
       ],
       default: [],
     },
+
+    /* ---------------------------------------------------------------------
+     * Admission fee voucher
+     *
+     * Minted once, when the application is first submitted, and kept across
+     * resubmissions so an edit never invalidates a voucher already paid.
+     *
+     * The applicant CLAIMS payment here; an admissions officer VERIFIES it in
+     * the dashboard, which owns the verified state the same way it owns the
+     * application status. paymentStatus below is this side's copy and is
+     * refreshed from that source whenever it is read.
+     * ------------------------------------------------------------------ */
+    voucherNumber: { type: String, default: '' },
+    voucherAmount: { type: Number, default: 0 },
+    voucherIssuedAt: { type: Date, default: null },
+
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'claimed', 'verified', 'rejected'],
+      default: 'unpaid',
+    },
+    paymentReference: { type: String, default: '' },
+    paymentNote: { type: String, default: '' },
+    paymentReceiptPath: { type: String, default: '' },
+    paymentClaimedAt: { type: Date, default: null },
+
     referenceNumber: { type: String, required: true, unique: true },
   },
   { timestamps: true },

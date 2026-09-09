@@ -337,3 +337,57 @@ export async function sendEmailVerificationEmail({ to, fullName, code, minutesVa
     }),
   });
 }
+
+/** Rupee amounts as the voucher prints them: Rs 1,500. */
+function money(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return '';
+  return `Rs ${value.toLocaleString('en-PK')}`;
+}
+
+/**
+ * Acknowledges that an applicant says they have paid their admission voucher.
+ *
+ * Careful with the wording: this confirms we received the CLAIM, not that the
+ * money has landed. An admissions officer still has to check the bank
+ * statement, and telling an applicant their fee is settled before that would
+ * be wrong.
+ */
+export async function sendPaymentClaimEmail({ to, fullName, voucherNumber, amount, paymentReference }) {
+  const formatted = money(amount);
+
+  return send({
+    to,
+    subject: `Payment received for checking — ${voucherNumber}`,
+    text:
+      `Assalam-o-Alaikum ${fullName},\n\n` +
+      'Thank you — we have recorded that you have paid your admission fee voucher.\n\n' +
+      `Voucher number: ${voucherNumber}\n` +
+      (formatted ? `Amount: ${formatted}\n` : '') +
+      `Your bank reference: ${paymentReference}\n\n` +
+      'The admissions office will check this against the bank statement and confirm it. ' +
+      'Your application moves forward once the payment has been verified — you do not ' +
+      'need to do anything else in the meantime.\n\n— SPIST Admissions',
+    html: layout({
+      heading: 'Payment received for checking',
+      bodyHtml:
+        `<p style="margin:0 0 16px;">Assalam-o-Alaikum ${fullName}, thank you — we have recorded ` +
+        'that you have paid your admission fee voucher.</p>' +
+        '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 18px;">' +
+        `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;width:42%;">Voucher number</td>` +
+        `<td style="padding:6px 0;font-weight:600;">${voucherNumber}</td></tr>` +
+        (formatted
+          ? `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;">Amount</td>` +
+            `<td style="padding:6px 0;font-weight:600;">${formatted}</td></tr>`
+          : '') +
+        `<tr><td style="padding:6px 0;color:#7a8781;font-size:13px;">Your bank reference</td>` +
+        `<td style="padding:6px 0;font-weight:600;">${paymentReference}</td></tr>` +
+        '</table>' +
+        '<p style="margin:0 0 12px;">The admissions office will check this against the bank ' +
+        'statement and confirm it. Your application moves forward once the payment has been ' +
+        '<strong>verified</strong>.</p>' +
+        '<p style="margin:0;color:#7a8781;font-size:13px;">You do not need to do anything else ' +
+        'in the meantime. Please keep your deposit slip until your admission is confirmed.</p>',
+    }),
+  });
+}

@@ -39,6 +39,14 @@ const UNKNOWN_STATUS = {
   note: 'Your application is with the admissions office. Contact them if you need an update before hearing back.',
 };
 
+/** What the applicant should understand about the fee, in one line each. */
+const PAYMENT_DISPLAY = {
+  unpaid: ['Not paid yet', 'text-amber-800'],
+  claimed: ['Awaiting verification', 'text-sky-800'],
+  verified: ['Verified', 'text-spist-green'],
+  rejected: ['Not found — please contact the office', 'text-spist-maroon'],
+};
+
 function formatSubmittedAt(value) {
   if (!value) return '—';
   const date = new Date(value);
@@ -173,6 +181,24 @@ export default function ApplicationStatusPage() {
                   <StatusRow label="Reference Number" value={result.referenceNumber} mono />
                   <StatusRow label="Submitted On" value={formatSubmittedAt(result.submittedAt)} />
                   <StatusRow label="Program Applied For" value={result.program} full />
+
+                  {result.voucherNumber && (
+                    <>
+                      <StatusRow label="Fee Voucher" value={result.voucherNumber} mono />
+                      <div>
+                        <dt className="text-[11.5px] font-bold uppercase tracking-wider text-spist-muted">
+                          Admission Fee
+                        </dt>
+                        <dd
+                          className={`mt-0.5 font-medium ${
+                            (PAYMENT_DISPLAY[result.paymentStatus] ?? PAYMENT_DISPLAY.unpaid)[1]
+                          }`}
+                        >
+                          {(PAYMENT_DISPLAY[result.paymentStatus] ?? PAYMENT_DISPLAY.unpaid)[0]}
+                        </dd>
+                      </div>
+                    </>
+                  )}
                 </dl>
               </div>
             )}

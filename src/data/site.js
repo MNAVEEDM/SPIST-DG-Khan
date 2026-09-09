@@ -36,6 +36,27 @@ export const institution = {
 };
 
 /* ---------------------------------------------------------------------------
+ * Admission fee
+ *
+ * Printed on the fee voucher an applicant takes to the bank. The amount is
+ * also set on the server (ADMISSION_FEE_AMOUNT) because that is what actually
+ * gets recorded against an application; this copy is what the voucher shows.
+ * Keep the two in step.
+ * ------------------------------------------------------------------------ */
+export const admissionFee = {
+  amount: 1500,
+  currency: 'PKR',
+  bank: {
+    name: 'United Bank Limited (UBL)',
+    branch: 'Sangam Chowk Branch, Dera Ghazi Khan',
+    title: 'SOUTH PUNJAB INSTITUTE OF SCIENCE & TECHNOLOGY',
+    iban: 'PK68 UNIL 0109 0003 0986 0633',
+    accountNumber: '0109 0003 0986 0633',
+  },
+};
+
+
+/* ---------------------------------------------------------------------------
  * PORTAL LOGINS
  *
  * The header "Login" menu, the mobile drawer and the footer all read this one

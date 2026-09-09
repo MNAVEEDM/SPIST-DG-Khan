@@ -1,0 +1,5 @@
+ 
+===== starting 09/09/2026 15:30:27.08 ===== 
+[db] Using DNS servers from DNS_SERVERS: 8.8.8.8, 1.1.1.1
+[db] Connected to MongoDB
+[server] Listening on http://localhost:5000

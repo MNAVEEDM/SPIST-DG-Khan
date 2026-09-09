@@ -199,6 +199,20 @@ export async function getApplicationPhotoUrl() {
   return data.url ?? null;
 }
 
+/**
+ * Records that the applicant has paid their admission fee voucher.
+ *
+ * A claim only: the money is confirmed by an admissions officer checking the
+ * bank statement, never by this call.
+ */
+export async function claimFeePayment({ paymentReference, paymentNote, paymentReceiptPath }) {
+  const data = await apiFetch('/api/applications/me/payment', {
+    method: 'POST',
+    body: JSON.stringify({ paymentReference, paymentNote, paymentReceiptPath }),
+  });
+  return data.application;
+}
+
 export async function clearApplication() {
   await apiFetch('/api/applications/me', { method: 'DELETE' });
 }
