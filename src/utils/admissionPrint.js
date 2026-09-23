@@ -108,7 +108,7 @@ function printWhenReady(printWindow) {
   printWindow.setTimeout(print, 4000);
 }
 
-function openPrintWindow({ title, bodyHtml }) {
+function openPrintWindow({ title, bodyHtml, extraStyles = '' }) {
   const printWindow = window.open('', '_blank', 'width=900,height=1000');
 
   if (!printWindow) {
@@ -117,7 +117,7 @@ function openPrintWindow({ title, bodyHtml }) {
 
   printWindow.document.write(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${escapeHtml(title)}</title>` +
-      `<style>${SHARED_STYLES}</style></head><body><div class="sheet">${bodyHtml}</div></body></html>`,
+      `<style>${SHARED_STYLES}${extraStyles}</style></head><body><div class="sheet">${bodyHtml}</div></body></html>`,
   );
   printWindow.document.close();
 
@@ -298,6 +298,145 @@ export function printAdmissionLetter({ submission }) {
       <p class="footer">
         This letter was generated from the ${escapeHtml(institution.shortName)} online admission
         portal against reference ${escapeHtml(submission.referenceNumber)}.
+      </p>`,
+  });
+}
+
+/* ---------------------------------------------------------------------------
+ * 3. Admission fee voucher — taken to the bank and paid
+ * ------------------------------------------------------------------------ */
+
+const ONES = [
+  '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+  'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen',
+  'Eighteen', 'Nineteen',
+];
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+/** Under a hundred, spelled out. */
+function twoDigitsInWords(value) {
+  if (value < 20) return ONES[value];
+  const tens = TENS[Math.floor(value / 10)];
+  const unit = ONES[value % 10];
+  return unit ? `${tens} ${unit}` : tens;
+}
+
+/**
+ * Rupees in words, the way a bank challan prints them. Grouped the South Asian
+ * way — crore, lakh, thousand — because that is what a UBL teller reads.
+ */
+function amountInWords(amount) {
+  let value = Math.floor(Number(amount) || 0);
+  if (value <= 0) return '';
+
+  const parts = [];
+  const groups = [
+    [10000000, 'Crore'],
+    [100000, 'Lakh'],
+    [1000, 'Thousand'],
+    [100, 'Hundred'],
+  ];
+
+  groups.forEach(([size, name]) => {
+    const count = Math.floor(value / size);
+    if (count > 0) {
+      parts.push(`${twoDigitsInWords(count)} ${name}`);
+      value -= count * size;
+    }
+  });
+
+  if (value > 0) parts.push(twoDigitsInWords(value));
+
+  return `${parts.join(' ')} Rupees Only`;
+}
+
+/** Rs 1,500 */
+function rupees(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return '';
+  return `Rs ${value.toLocaleString('en-PK')}`;
+}
+
+const VOUCHER_STYLES = `
+  .voucher { border: 1.5px solid #14532d; border-radius: 4px; padding: 7mm; margin-bottom: 6mm; }
+  .voucher:last-of-type { margin-bottom: 0; }
+  .voucher-head { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    border-bottom: 1px solid #dfe6e2; padding-bottom: 7px; margin-bottom: 9px; }
+  .voucher-head .who { display: flex; align-items: center; gap: 10px; }
+  .voucher-head img { width: 40px; height: 40px; object-fit: contain; }
+  .voucher-head h2 { margin: 0; font-size: 13px; color: #14532d; }
+  .voucher-head p { margin: 1px 0 0; font-size: 10px; color: #6b7873; }
+  .copy-tag { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    color: #14532d; border: 1px solid #14532d; border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  .voucher dl { grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .amount-box { margin-top: 9px; border-top: 1px dashed #cfd8d3; padding-top: 9px;
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .amount-box .figure { font-size: 19px; font-weight: 700; color: #14532d; white-space: nowrap; }
+  .amount-box .words { font-size: 11px; color: #6b7873; font-style: italic; }
+  .sig { margin-top: 11px; display: flex; justify-content: space-between; gap: 20px; }
+  .sig div { flex: 1; border-top: 1px solid #26302b; padding-top: 4px; font-size: 10px; color: #6b7873; }
+`;
+
+/**
+ * Two copies on one page: one the bank keeps, one the applicant keeps as proof
+ * until the admissions office confirms the payment.
+ */
+export function printFeeVoucher({ submission, fee }) {
+  const amount = submission.voucherAmount || fee.amount;
+  const issued = submission.voucherIssuedAt || submission.createdAt;
+
+  const copy = (label) => `
+    <div class="voucher">
+      <div class="voucher-head">
+        <div class="who">
+          <img src="${escapeHtml(assetUrl(institution.logo))}" alt="">
+          <div>
+            <h2>${escapeHtml(institution.name)}</h2>
+            <p>Admission Fee Voucher &middot; ${escapeHtml(institution.city)}</p>
+          </div>
+        </div>
+        <span class="copy-tag">${escapeHtml(label)}</span>
+      </div>
+
+      <dl>
+        ${field('Voucher No.', submission.voucherNumber)}
+        ${field('Issue Date', formatDate(issued))}
+        ${field('Applicant', submission.fullName)}
+        ${field("Father's Name", submission.fatherName)}
+        ${field('Application Ref.', submission.referenceNumber)}
+        ${field('Program', submission.program, true)}
+      </dl>
+
+      <dl style="margin-top:9px;border-top:1px dashed #cfd8d3;padding-top:9px;">
+        ${field('Bank', fee.bank.name)}
+        ${field('Branch', fee.bank.branch)}
+        ${field('Account Title', fee.bank.title, true)}
+        ${field('IBAN', fee.bank.iban)}
+        ${field('Account No.', fee.bank.accountNumber)}
+      </dl>
+
+      <div class="amount-box">
+        <span class="figure">${escapeHtml(rupees(amount))}</span>
+        <span class="words">${escapeHtml(amountInWords(amount))}</span>
+      </div>
+
+      <div class="sig">
+        <div>Depositor's Signature</div>
+        <div>Bank Stamp &amp; Date</div>
+      </div>
+    </div>`;
+
+  openPrintWindow({
+    title: `SPIST Fee Voucher — ${submission.voucherNumber}`,
+    extraStyles: VOUCHER_STYLES,
+    bodyHtml: `
+      ${copy('Bank Copy')}
+      ${copy('Applicant Copy')}
+      <p class="footer">
+        Deposit this voucher at ${escapeHtml(fee.bank.branch || fee.bank.name)}. Afterwards, sign in to the
+        admission portal and enter your deposit slip number so the admissions office can verify the
+        payment &mdash; your application only moves forward once it has been verified. Keep the
+        applicant copy until your admission is confirmed.
       </p>`,
   });
 }

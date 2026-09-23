@@ -32,6 +32,13 @@ export const DOCUMENT_SLOTS = {
 
 const PHOTO_SLOT = 'photo';
 
+/**
+ * The deposit slip for the admission fee. Kept out of DOCUMENT_SLOTS so it
+ * never appears in the documents step of the form — it belongs to the
+ * payment claim, which happens after the application is already submitted.
+ */
+const RECEIPT_SLOT = 'receipt';
+
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const ALLOWED_TYPES = [...IMAGE_TYPES, 'application/pdf'];
 
@@ -99,7 +106,9 @@ router.post(
     const slot = (req.body?.slot ?? '').toString().trim();
     const isPhoto = slot === PHOTO_SLOT;
 
-    if (!isPhoto && !DOCUMENT_SLOTS[slot]) {
+    const isReceipt = slot === RECEIPT_SLOT;
+
+    if (!isPhoto && !isReceipt && !DOCUMENT_SLOTS[slot]) {
       return res.status(400).json({ message: 'Unknown document type.' });
     }
     if (isPhoto && !IMAGE_TYPES.includes(file.mimetype)) {
@@ -110,9 +119,11 @@ router.post(
     const typedLabel = (req.body?.label ?? '').toString().trim().slice(0, 120);
     const label = isPhoto
       ? 'Applicant Photo'
-      : slot === 'other'
-        ? typedLabel || DOCUMENT_SLOTS.other
-        : DOCUMENT_SLOTS[slot];
+      : isReceipt
+        ? 'Fee Deposit Slip'
+        : slot === 'other'
+          ? typedLabel || DOCUMENT_SLOTS.other
+          : DOCUMENT_SLOTS[slot];
 
     const path = `${req.userId}/${slot}-${Date.now()}.${EXTENSIONS[file.mimetype]}`;
 

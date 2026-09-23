@@ -4,6 +4,7 @@ import PageBanner from '../components/PageBanner';
 import Reveal from '../components/Reveal';
 import AdmissionAuthGate from '../components/AdmissionAuthGate';
 import AdmissionWizard from '../components/AdmissionWizard';
+import AdmissionFeePanel from '../components/AdmissionFeePanel';
 import { Check, Mail, Phone } from '../components/Icons';
 import { navEntryFor } from '../data/navUtils';
 import { institution } from '../data/site';
@@ -146,6 +147,7 @@ export default function OnlineAdmissionPage() {
               ) : submission ? (
                 <ConfirmationPanel
                   submission={submission}
+                  onSubmissionUpdated={setSubmission}
                   onStartNewApplication={handleStartNewApplication}
                   onLogout={handleLogout}
                 />
@@ -187,7 +189,7 @@ export default function OnlineAdmissionPage() {
 /* ---------------------------------------------------------------------------
  * Confirmation state — shown once an account has a saved application.
  * ------------------------------------------------------------------------ */
-function ConfirmationPanel({ submission, onStartNewApplication, onLogout }) {
+function ConfirmationPanel({ submission, onStartNewApplication, onLogout, onSubmissionUpdated }) {
   const [status, setStatus] = useState(null);
   const [preparing, setPreparing] = useState('');
   const [printError, setPrintError] = useState('');
@@ -293,6 +295,8 @@ function ConfirmationPanel({ submission, onStartNewApplication, onLogout }) {
         <SummaryRow label="Program Applied For" value={submission.program} full />
         <SummaryRow label="Previous Qualification" value={submission.qualification} full />
       </dl>
+
+      <AdmissionFeePanel submission={submission} onUpdated={onSubmissionUpdated} />
 
       <UploadedSummary submission={submission} />
 
