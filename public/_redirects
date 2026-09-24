@@ -1,4 +1,10 @@
-# SPA fallback: React Router handles the routes client-side, so every path has
-# to be served index.html instead of Netlify looking for a matching file.
-# Without this only "/" works and every other URL 404s on refresh or direct visit.
+# Missing build assets must return a real 404, NOT fall through to the SPA
+# rule below. A browser holding a cached index.html asks for the previous
+# build's hashed filename; if Netlify answers that with index.html the browser
+# tries to execute HTML as JavaScript and the page renders blank.
+/assets/*  /assets/:splat  404
+
+# SPA fallback: React Router handles the routes client-side, so every other
+# path has to be served index.html instead of Netlify looking for a file.
+# Without this only "/" works and every other URL 404s on refresh.
 /*  /index.html  200

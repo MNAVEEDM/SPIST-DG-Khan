@@ -1,8 +1,12 @@
 # Netlify build settings for the SPIST website (frontend only).
 #
-# The Express API in server/ does NOT run here — Netlify serves static files.
-# Deploy that separately and point VITE_API_BASE_URL at it in
-# Site settings -> Environment variables (it is baked in at build time).
+# The Express API in server/ does NOT run here - Netlify serves static files.
+# It is deployed separately; VITE_API_BASE_URL points the built site at it and
+# is baked in at build time, so changing it needs a fresh build.
+#
+# Redirects live in public/_redirects, not here: rules in this file take
+# precedence over that one, and splitting them between the two silently breaks
+# the ordering they depend on.
 
 [build]
   command = "npm run build"
@@ -10,9 +14,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-
-# Same fallback as public/_redirects, kept here so the rule is visible in config.
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200

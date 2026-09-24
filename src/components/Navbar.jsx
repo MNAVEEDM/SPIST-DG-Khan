@@ -26,6 +26,7 @@ export default function Navbar() {
   const [openIndex, setOpenIndex] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [portalOpen, setPortalOpen] = useState(false);
+  const headerRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
