@@ -11,7 +11,8 @@
     "dev:api": "npm --prefix server run dev",
     "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev.ps1",
     "dev:api:local": "npm --prefix server run dev:localdb",
-    "dev:all:local": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev-local.ps1"
+    "dev:all:local": "powershell -NoProfile -ExecutionPolicy Bypass -File ./start-dev-local.ps1",
+    "lint": "eslint src"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -19,8 +20,13 @@
     "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "eslint": "^10.11.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.12.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.1.5"
   }
