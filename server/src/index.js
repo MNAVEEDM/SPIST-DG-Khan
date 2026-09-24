@@ -26,7 +26,13 @@ const app = express();
  * out whatever port happens to be free — and a mismatch surfaces in the
  * browser as a misleading "could not reach the server", not as a CORS error.
  */
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+// CLIENT_ORIGIN may list several origins, comma separated - the public site and
+// the SMS portal sit on different hosts in production. A single exact match
+// would silently reject every one of them.
+const CLIENT_ORIGINS = (process.env.CLIENT_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((value) => value.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const LOCALHOST_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1):\d+$/;
 
@@ -35,7 +41,7 @@ app.use(
     origin(origin, callback) {
       // curl, server-to-server and same-origin requests send no Origin header.
       if (!origin) return callback(null, true);
-      if (origin === CLIENT_ORIGIN) return callback(null, true);
+      if (CLIENT_ORIGINS.includes(origin.replace(/\/$/, ''))) return callback(null, true);
       if (!IS_PRODUCTION && LOCALHOST_ORIGIN.test(origin)) return callback(null, true);
       return callback(null, false);
     },

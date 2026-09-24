@@ -1,0 +1,4 @@
+# SPA fallback: React Router handles the routes client-side, so every path has
+# to be served index.html instead of Netlify looking for a matching file.
+# Without this only "/" works and every other URL 404s on refresh or direct visit.
+/*  /index.html  200
