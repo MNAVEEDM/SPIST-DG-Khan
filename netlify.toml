@@ -1,0 +1,18 @@
+# Netlify build settings for the SPIST website (frontend only).
+#
+# The Express API in server/ does NOT run here — Netlify serves static files.
+# Deploy that separately and point VITE_API_BASE_URL at it in
+# Site settings -> Environment variables (it is baked in at build time).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Same fallback as public/_redirects, kept here so the rule is visible in config.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
