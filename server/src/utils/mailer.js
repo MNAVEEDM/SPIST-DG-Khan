@@ -3,16 +3,34 @@ import nodemailer from 'nodemailer';
 /**
  * Outgoing mail for the admission flow.
  *
- * Credentials are optional on purpose: this is a student project that has to
- * keep working on a machine with no SMTP set up. When EMAIL_USER/EMAIL_PASS
- * are blank we skip sending and print the message to the server console
- * instead, so the flow can still be tested end to end.
+ * Two ways out, because the host decides which one can work:
+ *
+ *   BREVO_API_KEY — Brevo's HTTPS API. Render's free instances block outbound
+ *     traffic on the SMTP ports (25, 465, 587), so nodemailer cannot open a
+ *     connection there at all. It fails silently from the applicant's side:
+ *     the verification and reset codes are saved, the response says a code is
+ *     on its way, and no mail is ever sent. Port 443 is not blocked, so the
+ *     API gets through. This is the same provider and endpoint the Smart-SMS
+ *     portal already sends its admission-decision mail through.
+ *
+ *   EMAIL_USER / EMAIL_PASS — Gmail over SMTP. Fine locally, and the fallback
+ *     when no Brevo key is set.
+ *
+ * Credentials are optional on purpose: with neither configured we print the
+ * message to the server console instead, so the flow can still be tested end
+ * to end on a machine with no mail set up at all.
  */
+
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
 let cachedTransport;
 
+function brevoKey() {
+  return process.env.BREVO_API_KEY?.trim() || '';
+}
+
 export function isMailConfigured() {
-  return Boolean(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+  return Boolean(brevoKey() || (process.env.EMAIL_USER && process.env.EMAIL_PASS));
 }
 
 function getTransport() {
@@ -25,10 +43,55 @@ function getTransport() {
   return cachedTransport;
 }
 
+/**
+ * Splits the `EMAIL_FROM` setting into the two fields Brevo wants. It is
+ * written as either `admissions@spistpk.com` or `SPIST Admissions
+ * <admissions@spistpk.com>`; SMTP takes that string whole, Brevo does not.
+ */
+function parseSender(value) {
+  const match = /^\s*(.*?)\s*<\s*([^>]+?)\s*>\s*$/.exec(value ?? '');
+  if (match) return { name: match[1] || undefined, email: match[2] };
+  return { email: (value ?? '').trim() };
+}
+
+async function sendViaBrevo({ to, subject, text, html }) {
+  const sender = parseSender(process.env.EMAIL_FROM || process.env.EMAIL_USER);
+
+  const response = await fetch(BREVO_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: 'application/json',
+      'api-key': brevoKey(),
+    },
+    body: JSON.stringify({
+      sender,
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      textContent: text,
+    }),
+  });
+
+  if (!response.ok) {
+    // Brevo explains refusals properly — an unverified sender, a spent quota.
+    // Carry that text into the error so the log says what to fix, rather than
+    // just the status code.
+    const detail = await response.text().catch(() => '');
+    throw new Error(`Brevo refused the message (${response.status}): ${detail}`);
+  }
+
+  return true;
+}
+
 async function send({ to, subject, text, html }) {
   if (!isMailConfigured()) {
     console.log(`\n[mailer] Email not configured — would have sent to ${to}:\n${subject}\n${text}\n`);
     return false;
+  }
+
+  if (brevoKey()) {
+    return sendViaBrevo({ to, subject, text, html });
   }
 
   await getTransport().sendMail({
