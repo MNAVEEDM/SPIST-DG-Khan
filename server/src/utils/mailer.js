@@ -13,10 +13,18 @@ import nodemailer from 'nodemailer';
  *     API gets through. This is the same provider and endpoint the Smart-SMS
  *     portal already sends its admission-decision mail through.
  *
- *   EMAIL_USER / EMAIL_PASS — Gmail over SMTP. Fine locally, and the fallback
- *     when no Brevo key is set.
+ *   Supabase Vault — the same Brevo key, fetched through the
+ *     mail_provider_key() function (server/sql/2026-09-25-mail-provider-key.sql)
+ *     when BREVO_API_KEY is not in the environment. The deployed service was
+ *     created under an account that can no longer be signed in to, so its
+ *     environment cannot be edited; the Supabase service-role key it already
+ *     holds is enough to ask for the Brevo one. It also means the secret lives
+ *     in a single place for both this API and the portal.
  *
- * Credentials are optional on purpose: with neither configured we print the
+ *   EMAIL_USER / EMAIL_PASS — Gmail over SMTP. Fine locally, and the fallback
+ *     when no Brevo key can be found either way.
+ *
+ * Credentials are optional on purpose: with none configured we print the
  * message to the server console instead, so the flow can still be tested end
  * to end on a machine with no mail set up at all.
  */
@@ -24,13 +32,78 @@ import nodemailer from 'nodemailer';
 const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
 
 let cachedTransport;
+/** Resolved once per process: { brevoApiKey, fromEmail } or null. */
+let vaultPromise;
 
 function brevoKey() {
   return process.env.BREVO_API_KEY?.trim() || '';
 }
 
+function canAskVault() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+/**
+ * Asks Supabase for the Brevo credentials, once. A failure resolves to null
+ * rather than throwing, so a Supabase outage costs the send its provider and
+ * drops to SMTP instead of taking the whole signup down with it — the caller
+ * treats a missing key the same as one that was never configured.
+ */
+function fetchFromVault() {
+  if (!vaultPromise) {
+    const url = `${process.env.SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/mail_provider_key`;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    vaultPromise = fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: serviceKey,
+        Authorization: `Bearer ${serviceKey}`,
+      },
+      body: '{}',
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const detail = await response.text().catch(() => '');
+          throw new Error(`${response.status} ${detail}`);
+        }
+        return response.json();
+      })
+      .catch((error) => {
+        console.error('[mailer] Could not read the Brevo key from Supabase:', error.message);
+        return null;
+      });
+  }
+  return vaultPromise;
+}
+
+/** The key and sender to send with, or null when neither source has one. */
+async function resolveBrevo() {
+  const fromEnv = brevoKey();
+  const envSender = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  if (fromEnv) return { key: fromEnv, from: envSender };
+
+  if (!canAskVault()) return null;
+
+  const secrets = await fetchFromVault();
+  if (!secrets?.brevoApiKey) return null;
+
+  // The env wins for the sender when it is set: this API may well be sending
+  // as a different address than the portal does.
+  return { key: secrets.brevoApiKey, from: envSender || secrets.fromEmail };
+}
+
+/**
+ * Reported to the applicant, so it has to answer synchronously — before any
+ * Vault round trip has happened. Having the Supabase credentials counts as
+ * configured: if the lookup then comes back empty, the send falls through to
+ * SMTP or the console, which is what an unconfigured server does anyway.
+ */
 export function isMailConfigured() {
-  return Boolean(brevoKey() || (process.env.EMAIL_USER && process.env.EMAIL_PASS));
+  return Boolean(
+    brevoKey() || canAskVault() || (process.env.EMAIL_USER && process.env.EMAIL_PASS),
+  );
 }
 
 function getTransport() {
@@ -54,15 +127,15 @@ function parseSender(value) {
   return { email: (value ?? '').trim() };
 }
 
-async function sendViaBrevo({ to, subject, text, html }) {
-  const sender = parseSender(process.env.EMAIL_FROM || process.env.EMAIL_USER);
+async function sendViaBrevo({ to, subject, text, html }, { key, from }) {
+  const sender = parseSender(from);
 
   const response = await fetch(BREVO_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       accept: 'application/json',
-      'api-key': brevoKey(),
+      'api-key': key,
     },
     body: JSON.stringify({
       sender,
@@ -85,23 +158,25 @@ async function sendViaBrevo({ to, subject, text, html }) {
 }
 
 async function send({ to, subject, text, html }) {
-  if (!isMailConfigured()) {
-    console.log(`\n[mailer] Email not configured — would have sent to ${to}:\n${subject}\n${text}\n`);
-    return false;
+  const brevo = await resolveBrevo();
+
+  if (brevo) {
+    return sendViaBrevo({ to, subject, text, html }, brevo);
   }
 
-  if (brevoKey()) {
-    return sendViaBrevo({ to, subject, text, html });
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    await getTransport().sendMail({
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to,
+      subject,
+      text,
+      html,
+    });
+    return true;
   }
 
-  await getTransport().sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
-    to,
-    subject,
-    text,
-    html,
-  });
-  return true;
+  console.log(`\n[mailer] Email not configured — would have sent to ${to}:\n${subject}\n${text}\n`);
+  return false;
 }
 
 /** Shared shell so both emails look like they come from the same institute. */
