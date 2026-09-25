@@ -354,18 +354,45 @@
   }
 }
 
-/* ---------- Decorative brand pattern (stands in for photography) ---------- */
-.brand-pattern {
-  background-image:
-    radial-gradient(circle at 18% 22%, rgb(255 255 255 / 0.14) 0, transparent 42%),
-    radial-gradient(circle at 82% 78%, rgb(255 255 255 / 0.1) 0, transparent 46%),
-    repeating-linear-gradient(
-      135deg,
-      rgb(255 255 255 / 0.05) 0px,
-      rgb(255 255 255 / 0.05) 2px,
-      transparent 2px,
-      transparent 14px
-    );
+/* ---------- Decorative brand pattern (stands in for photography) ----------
+   The texture is painted on ::before rather than on the element itself.
+   Nine of the places that use this class also carry a `bg-gradient-to-br`,
+   and a `background-image` here would win over that utility outright: this
+   rule sits outside every cascade layer, and Tailwind's utilities live in
+   @layer utilities, which unlayered CSS always beats. The gradients were
+   being erased site-wide - most visibly on the maroon "Admissions Open"
+   card, whose white text was left on a white background.
+
+   `isolation` matters: it gives the element a stacking context so the
+   z-index below stays inside it, painting the texture over the element's
+   own gradient but still under its content. Without it the texture would
+   slip behind that gradient and disappear again. `position` is declared in
+   @layer components on purpose, so the `absolute` utility on the overlay
+   usages still wins. */
+@layer components {
+  .brand-pattern {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .brand-pattern::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle at 18% 22%, rgb(255 255 255 / 0.14) 0, transparent 42%),
+      radial-gradient(circle at 82% 78%, rgb(255 255 255 / 0.1) 0, transparent 46%),
+      repeating-linear-gradient(
+        135deg,
+        rgb(255 255 255 / 0.05) 0px,
+        rgb(255 255 255 / 0.05) 2px,
+        transparent 2px,
+        transparent 14px
+      );
+  }
 }
 
 /* ---------- Admission wizard step / panel transitions ----------
