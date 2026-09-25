@@ -176,8 +176,13 @@ export default function Navbar() {
 
           {/* Right gutter — the column that mirrors the logo's, so the nav
               block above stays centred on the row. Login sits at the far edge
-              on every size; the drawer trigger joins it below xl. */}
-          <div className="flex items-center justify-end gap-1.5 justify-self-end">
+              on every size; the drawer trigger joins it below `nav:`.
+
+              col-start-3 is load-bearing, for the reason the note above gives:
+              under `nav:` the menu is display:none and leaves the grid, so
+              without an explicit column this group auto-places into the empty
+              middle one and the Login button lands mid-row. */}
+          <div className="col-start-3 flex items-center justify-end gap-1.5 justify-self-end">
             <PortalMenu
               open={portalOpen}
               onOpen={() => setPortalOpen(true)}
@@ -188,7 +193,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="-mr-1 flex h-11 w-11 items-center justify-center rounded-md text-white transition-colors duration-200 hover:bg-white/10 xl:hidden"
+              className="-mr-1 flex h-11 w-11 items-center justify-center rounded-md text-white transition-colors duration-200 hover:bg-white/10 nav:hidden"
               aria-label="Open navigation menu"
               aria-expanded={drawerOpen}
               aria-controls="mobile-navigation"
