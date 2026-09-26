@@ -173,8 +173,8 @@ export default function MegaMenu({ item, isOpen, onOpen, onClose }) {
           title={item.title}
           className={({ isActive }) =>
             [
-              'relative flex items-center whitespace-nowrap px-2.5 py-4 text-[13px] font-semibold uppercase tracking-wide transition-colors duration-200',
-              'after:absolute after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
+              'relative flex items-center whitespace-nowrap px-1.5 py-4 text-[12px] font-semibold uppercase tracking-normal transition-colors duration-200 navwide:px-2.5 navwide:text-[13px] navwide:tracking-wide',
+              'after:absolute after:inset-x-1 navwide:after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
               isActive
                 ? 'text-white after:bg-white'
                 : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white',
@@ -218,8 +218,8 @@ export default function MegaMenu({ item, isOpen, onOpen, onClose }) {
           }
         }}
         className={[
-          'relative flex items-center gap-1 whitespace-nowrap px-2.5 py-4 text-[13px] font-semibold uppercase tracking-wide transition-colors duration-200',
-          'after:absolute after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
+          'relative flex items-center gap-1 whitespace-nowrap px-1.5 py-4 text-[12px] font-semibold uppercase tracking-normal transition-colors duration-200 navwide:px-2.5 navwide:text-[13px] navwide:tracking-wide',
+          'after:absolute after:inset-x-1 navwide:after:inset-x-2 after:bottom-2.5 after:h-[3px] after:rounded-full after:transition-all after:duration-200',
           containsActivePath
             ? 'text-white after:bg-white'
             : 'text-white/90 hover:text-white after:bg-transparent hover:after:bg-white',

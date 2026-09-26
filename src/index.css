@@ -19,13 +19,16 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Poppins', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-  /* ---- Navigation breakpoint -------------------------------------------
-     The desktop nav is ~1220px of menu items on its own; with the logo,
-     the mirror gutter that centres it and the row padding it needs about
-     1536px before it stops running off the right edge. Tailwind's own xl
-     (1280px) is too early, so the drawer stays in charge until this width.
+  /* ---- Navigation breakpoints ------------------------------------------
+     At full size (13px, wide tracking) the desktop nav is ~1220px of menu
+     items on its own, and with the logo, the mirror gutter that centres it
+     and the row padding it needs about 1536px. Most laptops (1366-1536px,
+     including 4K panels at 250% scaling) sit below that, so between `nav`
+     and `navwide` the items drop to a compact size (~1000px) that fits, and
+     the drawer only takes over below `nav`.
      --------------------------------------------------------------------- */
-  --breakpoint-nav: 1560px;
+  --breakpoint-nav: 1360px;
+  --breakpoint-navwide: 1560px;
 
   /* ---- Elevation scale (0 → 4) ---------------------------------------- */
   --shadow-e1: 0 1px 2px rgb(40 40 35 / 0.06), 0 2px 8px -2px rgb(40 40 35 / 0.08);
